@@ -4,12 +4,14 @@ import React, { useState } from 'react';
 
 type Player = 'X' | 'O' | null;
 type Board = Player[];
+type GameMode = 'pvp' | 'easy' | 'hard';
 
 interface GameState {
   board: Board;
   currentPlayer: Player;
   winner: Player;
   isGameOver: boolean;
+  gameMode: GameMode;
 }
 
 const TicTacToe: React.FC = () => {
@@ -17,7 +19,8 @@ const TicTacToe: React.FC = () => {
     board: Array(9).fill(null),
     currentPlayer: 'X',
     winner: null,
-    isGameOver: false
+    isGameOver: false,
+    gameMode: 'pvp'
   });
 
   const checkWinner = (board: Board): Player => {
@@ -41,20 +44,125 @@ const TicTacToe: React.FC = () => {
     return board.every(cell => cell !== null);
   };
 
+  // AI Helper Functions
+  const getEmptyCells = (board: Board): number[] => {
+    return board.map((cell, index) => cell === null ? index : -1).filter(index => index !== -1);
+  };
+
+  const makeRandomMove = (board: Board): number => {
+    const emptyCells = getEmptyCells(board);
+    return emptyCells[Math.floor(Math.random() * emptyCells.length)];
+  };
+
+  const minimax = (
+    board: Board, 
+    depth: number, 
+    isMaximizing: boolean, 
+    alpha: number = -Infinity, 
+    beta: number = Infinity
+  ): number => {
+    const winner = checkWinner(board);
+    
+    // Terminal states
+    if (winner === 'O') return 10 - depth; // AI wins (prefer faster wins)
+    if (winner === 'X') return depth - 10; // Human wins (prefer slower losses)
+    if (isBoardFull(board)) return 0; // Tie
+    
+    const emptyCells = getEmptyCells(board);
+    
+    if (isMaximizing) {
+      let maxEval = -Infinity;
+      for (const cell of emptyCells) {
+        board[cell] = 'O'; // AI move
+        const evaluation = minimax(board, depth + 1, false, alpha, beta);
+        board[cell] = null; // Undo move
+        maxEval = Math.max(maxEval, evaluation);
+        alpha = Math.max(alpha, evaluation);
+        if (beta <= alpha) break; // Alpha-beta pruning
+      }
+      return maxEval;
+    } else {
+      let minEval = Infinity;
+      for (const cell of emptyCells) {
+        board[cell] = 'X'; // Human move
+        const evaluation = minimax(board, depth + 1, true, alpha, beta);
+        board[cell] = null; // Undo move
+        minEval = Math.min(minEval, evaluation);
+        beta = Math.min(beta, evaluation);
+        if (beta <= alpha) break; // Alpha-beta pruning
+      }
+      return minEval;
+    }
+  };
+
+  const getBestMove = (board: Board): number => {
+    let bestMove = -1;
+    let bestValue = -Infinity;
+    const emptyCells = getEmptyCells(board);
+    
+    for (const cell of emptyCells) {
+      board[cell] = 'O'; // AI move
+      const moveValue = minimax(board, 0, false);
+      board[cell] = null; // Undo move
+      
+      if (moveValue > bestValue) {
+        bestValue = moveValue;
+        bestMove = cell;
+      }
+    }
+    
+    return bestMove;
+  };
+
+  const makeAIMove = (board: Board, gameMode: GameMode): number => {
+    if (gameMode === 'easy') {
+      return makeRandomMove(board);
+    } else if (gameMode === 'hard') {
+      return getBestMove(board);
+    }
+    return -1; // Should never reach here
+  };
+
   const handleCellClick = (index: number) => {
     if (gameState.board[index] || gameState.isGameOver) {
       return;
     }
 
+    // Human player makes move
     const newBoard = [...gameState.board];
     newBoard[index] = gameState.currentPlayer;
 
-    const winner = checkWinner(newBoard);
-    const isFull = isBoardFull(newBoard);
+    let winner = checkWinner(newBoard);
+    let isFull = isBoardFull(newBoard);
+    let nextPlayer: Player = gameState.currentPlayer === 'X' ? 'O' : 'X';
+
+    // Check if game is over after human move
+    if (winner || isFull) {
+      setGameState({
+        ...gameState,
+        board: newBoard,
+        currentPlayer: nextPlayer,
+        winner: winner,
+        isGameOver: true
+      });
+      return;
+    }
+
+    // If playing against AI and it's AI's turn
+    if (gameState.gameMode !== 'pvp' && nextPlayer === 'O') {
+      const aiMoveIndex = makeAIMove(newBoard, gameState.gameMode);
+      if (aiMoveIndex !== -1) {
+        newBoard[aiMoveIndex] = 'O';
+        winner = checkWinner(newBoard);
+        isFull = isBoardFull(newBoard);
+        nextPlayer = 'X'; // Back to human
+      }
+    }
 
     setGameState({
+      ...gameState,
       board: newBoard,
-      currentPlayer: gameState.currentPlayer === 'X' ? 'O' : 'X',
+      currentPlayer: nextPlayer,
       winner: winner,
       isGameOver: winner !== null || isFull
     });
@@ -62,6 +170,7 @@ const TicTacToe: React.FC = () => {
 
   const resetGame = () => {
     setGameState({
+      ...gameState,
       board: Array(9).fill(null),
       currentPlayer: 'X',
       winner: null,
@@ -69,14 +178,32 @@ const TicTacToe: React.FC = () => {
     });
   };
 
+  const changeGameMode = (newMode: GameMode) => {
+    setGameState({
+      board: Array(9).fill(null),
+      currentPlayer: 'X',
+      winner: null,
+      isGameOver: false,
+      gameMode: newMode
+    });
+  };
+
   const getGameStatus = (): string => {
     if (gameState.winner) {
-      return `Player ${gameState.winner} wins!`;
+      if (gameState.gameMode === 'pvp') {
+        return `Player ${gameState.winner} wins!`;
+      } else {
+        return gameState.winner === 'X' ? 'You win!' : 'AI wins!';
+      }
     }
     if (gameState.isGameOver) {
       return "It's a tie!";
     }
-    return `Player ${gameState.currentPlayer}'s turn`;
+    if (gameState.gameMode === 'pvp') {
+      return `Player ${gameState.currentPlayer}'s turn`;
+    } else {
+      return gameState.currentPlayer === 'X' ? 'Your turn' : 'AI is thinking...';
+    }
   };
 
   const getCellStyle = (index: number): string => {
@@ -101,6 +228,40 @@ const TicTacToe: React.FC = () => {
         <h1 className="text-4xl font-bold text-center mb-8 text-gray-800">
           Tic Tac Toe
         </h1>
+        
+        {/* Game Mode Selection */}
+        <div className="flex justify-center gap-2 mb-6">
+          <button
+            onClick={() => changeGameMode('pvp')}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              gameState.gameMode === 'pvp'
+                ? 'bg-blue-500 text-white'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            2 Players
+          </button>
+          <button
+            onClick={() => changeGameMode('easy')}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              gameState.gameMode === 'easy'
+                ? 'bg-green-500 text-white'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            Easy AI
+          </button>
+          <button
+            onClick={() => changeGameMode('hard')}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              gameState.gameMode === 'hard'
+                ? 'bg-red-500 text-white'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            Hard AI
+          </button>
+        </div>
         
         <div className="text-center mb-6">
           <p className="text-xl font-semibold text-gray-700">
@@ -135,9 +296,21 @@ const TicTacToe: React.FC = () => {
         <div className="mt-8 text-center text-gray-600">
           <h2 className="text-lg font-semibold mb-2">How to Play:</h2>
           <ul className="text-sm space-y-1">
-            <li>• Player 1 (X) goes first</li>
-            <li>• Player 2 (O) goes second</li>
-            <li>• Get 3 in a row to win!</li>
+            {gameState.gameMode === 'pvp' ? (
+              <>
+                <li>• Player 1 (X) goes first</li>
+                <li>• Player 2 (O) goes second</li>
+                <li>• Get 3 in a row to win!</li>
+              </>
+            ) : (
+              <>
+                <li>• You are X, AI is O</li>
+                <li>• You go first</li>
+                <li>• Easy AI makes random moves</li>
+                <li>• Hard AI plays optimally</li>
+                <li>• Get 3 in a row to win!</li>
+              </>
+            )}
           </ul>
         </div>
       </div>
