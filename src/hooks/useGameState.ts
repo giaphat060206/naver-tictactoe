@@ -4,6 +4,7 @@ import { TicTacToeGame } from '../logic/gameLogic';
 import { TicTacToeAI } from '../logic/aiLogic';
 import { useScoreTracking } from './useScoreTracking';
 import { usePerformanceMetrics } from './usePerformanceMetrics';
+import { MoveHistoryManager } from '../utils/moveHistory';
 
 /**
  * Custom hook for managing Tic Tac Toe game state
@@ -16,7 +17,8 @@ export const useGameState = () => {
     winner: null,
     isGameOver: false,
     gameMode: 'pvp',
-    winningCombination: null
+    winningCombination: null,
+    moveHistory: []
   });
 
   const { scores, recordGameResult, resetAllScores, resetScoresByMode, getScoreSummary } = useScoreTracking();
@@ -32,11 +34,39 @@ export const useGameState = () => {
       currentPlayer: 'X',
       winner: null,
       isGameOver: false,
-      winningCombination: null
+      winningCombination: null,
+      moveHistory: MoveHistoryManager.clearHistory()
     }));
     // Reset performance metrics for new game
     resetMetrics();
   }, [resetMetrics]);
+
+  /**
+   * Reverts the game to a specific move in the history
+   */
+  const revertToMove = useCallback((moveIndex: number) => {
+    if (moveIndex < 0 || moveIndex >= gameState.moveHistory.length) {
+      return;
+    }
+
+    const move = gameState.moveHistory[moveIndex];
+    const revertedHistory = MoveHistoryManager.revertToMove(gameState.moveHistory, moveIndex);
+    const revertedBoard = MoveHistoryManager.getBoardFromMove(move);
+    const nextPlayer = MoveHistoryManager.getNextPlayerAfterRevert(gameState.moveHistory, moveIndex);
+    
+    // Evaluate the game state at this point
+    const gameResult = TicTacToeGame.evaluateGame(revertedBoard);
+
+    setGameState(prevState => ({
+      ...prevState,
+      board: revertedBoard,
+      currentPlayer: nextPlayer,
+      winner: gameResult.winner,
+      isGameOver: gameResult.isGameOver,
+      winningCombination: gameResult.winningCombination,
+      moveHistory: revertedHistory
+    }));
+  }, [gameState.moveHistory]);
 
   /**
    * Changes the game mode and resets the game
@@ -48,7 +78,8 @@ export const useGameState = () => {
       winner: null,
       isGameOver: false,
       gameMode: newMode,
-      winningCombination: null
+      winningCombination: null,
+      moveHistory: MoveHistoryManager.clearHistory()
     });
     // Reset performance metrics when changing modes
     resetMetrics();
@@ -74,6 +105,14 @@ export const useGameState = () => {
     const gameResult = TicTacToeGame.evaluateGame(newBoard);
     let nextPlayer = TicTacToeGame.getNextPlayer(gameState.currentPlayer);
 
+    // Record the human move
+    const updatedMoveHistory = MoveHistoryManager.addMove(
+      gameState.moveHistory,
+      position,
+      gameState.currentPlayer,
+      newBoard
+    );
+
     // If game is over after human move, update state and record result
     if (gameResult.isGameOver) {
       setGameState(prevState => ({
@@ -82,7 +121,8 @@ export const useGameState = () => {
         currentPlayer: nextPlayer,
         winner: gameResult.winner,
         isGameOver: true,
-        winningCombination: gameResult.winningCombination
+        winningCombination: gameResult.winningCombination,
+        moveHistory: updatedMoveHistory
       }));
       
       // Record the game result
@@ -98,6 +138,15 @@ export const useGameState = () => {
         const boardWithAIMove = TicTacToeGame.makeMove(newBoard, aiResult.position, 'O');
         const finalGameResult = TicTacToeGame.evaluateGame(boardWithAIMove);
         
+        // Record the AI move
+        const finalMoveHistory = MoveHistoryManager.addMove(
+          updatedMoveHistory,
+          aiResult.position,
+          'O',
+          boardWithAIMove,
+          true // isAI = true
+        );
+        
         // Update performance metrics
         updateMetrics(aiResult.metrics);
         
@@ -107,7 +156,8 @@ export const useGameState = () => {
           currentPlayer: 'X', // Back to human
           winner: finalGameResult.winner,
           isGameOver: finalGameResult.isGameOver,
-          winningCombination: finalGameResult.winningCombination
+          winningCombination: finalGameResult.winningCombination,
+          moveHistory: finalMoveHistory
         }));
 
         // Record the game result if the game ended
@@ -123,7 +173,8 @@ export const useGameState = () => {
           currentPlayer: nextPlayer,
           winner: gameResult.winner,
           isGameOver: gameResult.isGameOver,
-          winningCombination: gameResult.winningCombination
+          winningCombination: gameResult.winningCombination,
+          moveHistory: updatedMoveHistory
         }));
         
         if (gameResult.isGameOver) {
@@ -138,7 +189,8 @@ export const useGameState = () => {
         currentPlayer: nextPlayer,
         winner: gameResult.winner,
         isGameOver: gameResult.isGameOver,
-        winningCombination: gameResult.winningCombination
+        winningCombination: gameResult.winningCombination,
+        moveHistory: updatedMoveHistory
       }));
       
       if (gameResult.isGameOver) {
@@ -191,6 +243,7 @@ export const useGameState = () => {
     metrics,
     makeMove,
     resetGame,
+    revertToMove,
     changeGameMode,
     getGameStatus,
     resetAllScores,

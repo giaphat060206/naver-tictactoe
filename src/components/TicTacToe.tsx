@@ -8,6 +8,7 @@ import GameStatus from './GameStatus';
 import GameInstructions from './GameInstructions';
 import ScoreBoard from './ScoreBoard';
 import PerformanceMetrics from './PerformanceMetrics';
+import { MoveHistory } from './MoveHistory';
 
 /**
  * Main Tic Tac Toe Component
@@ -18,7 +19,8 @@ const TicTacToe: React.FC = () => {
     gameState, 
     scores, 
     makeMove, 
-    resetGame, 
+    resetGame,
+    revertToMove,
     changeGameMode, 
     getGameStatus,
     resetAllScores,
@@ -69,7 +71,18 @@ const TicTacToe: React.FC = () => {
           winningCombination={gameState.winningCombination}
         />
 
-        <div className="text-center">
+        {gameState.moveHistory.length > 0 && (
+          <div className="mt-6">
+            <MoveHistory
+              moves={gameState.moveHistory}
+              gameMode={gameState.gameMode}
+              onRevertToMove={revertToMove}
+              className="max-w-md mx-auto"
+            />
+          </div>
+        )}
+
+        <div className="text-center mt-6">
           <button
             onClick={resetGame}
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition-colors"
