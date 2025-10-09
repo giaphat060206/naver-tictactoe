@@ -7,6 +7,7 @@ import GameBoard from './GameBoard';
 import GameStatus from './GameStatus';
 import GameInstructions from './GameInstructions';
 import ScoreBoard from './ScoreBoard';
+import PerformanceMetrics from './PerformanceMetrics';
 
 /**
  * Main Tic Tac Toe Component
@@ -22,12 +23,14 @@ const TicTacToe: React.FC = () => {
     getGameStatus,
     resetAllScores,
     resetScoresByMode,
-    getScoreSummary
+    getScoreSummary,
+    getFormattedMetrics,
+    getPerformanceInsights
   } = useGameState();
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
-      <div className="bg-white rounded-lg shadow-lg p-8 max-w-2xl w-full">
+      <div className="bg-white rounded-lg shadow-lg p-8 max-w-4xl w-full">
         <h1 className="text-4xl font-bold text-center mb-8 text-gray-800">
           Tic Tac Toe
         </h1>
@@ -37,12 +40,20 @@ const TicTacToe: React.FC = () => {
           onModeChange={changeGameMode}
         />
 
-        <ScoreBoard
-          gameMode={gameState.gameMode}
-          scoreSummary={getScoreSummary(gameState.gameMode)}
-          onResetScores={() => resetScoresByMode(gameState.gameMode)}
-          onResetAllScores={resetAllScores}
-        />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <ScoreBoard
+            gameMode={gameState.gameMode}
+            scoreSummary={getScoreSummary(gameState.gameMode)}
+            onResetScores={() => resetScoresByMode(gameState.gameMode)}
+            onResetAllScores={resetAllScores}
+          />
+
+          <PerformanceMetrics
+            gameMode={gameState.gameMode}
+            formattedMetrics={getFormattedMetrics(gameState.gameMode)}
+            insights={getPerformanceInsights(gameState.gameMode)}
+          />
+        </div>
         
         <GameStatus
           status={getGameStatus()}

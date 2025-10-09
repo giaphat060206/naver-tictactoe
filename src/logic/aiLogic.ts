@@ -1,4 +1,4 @@
-import { Board, Player, GameMode } from '../types/game';
+import { Board, Player, GameMode, PerformanceMetrics, AIResult } from '../types/game';
 import { TicTacToeGame } from './gameLogic';
 
 /**
@@ -6,10 +6,36 @@ import { TicTacToeGame } from './gameLogic';
  * Contains all AI algorithms separated from game logic and UI
  */
 export class TicTacToeAI {
+  // Performance tracking
+  private static positionsEvaluated = 0;
+
+  /**
+   * Resets the position counter for a new evaluation
+   */
+  private static resetPositionCounter(): void {
+    this.positionsEvaluated = 0;
+  }
+
+  /**
+   * Increments the position counter
+   */
+  private static incrementPositionCounter(): void {
+    this.positionsEvaluated++;
+  }
+
+  /**
+   * Gets the current position count
+   */
+  private static getPositionCount(): number {
+    return this.positionsEvaluated;
+  }
+
   /**
    * Makes a random move from available positions
    */
-  static makeRandomMove(board: Board): number {
+  static makeRandomMove(board: Board): AIResult {
+    const startTime = performance.now();
+    
     const emptyPositions = TicTacToeGame.getEmptyPositions(board);
     
     if (emptyPositions.length === 0) {
@@ -17,11 +43,25 @@ export class TicTacToeAI {
     }
     
     const randomIndex = Math.floor(Math.random() * emptyPositions.length);
-    return emptyPositions[randomIndex];
+    const position = emptyPositions[randomIndex];
+    
+    const endTime = performance.now();
+    const thinkingTime = endTime - startTime;
+
+    const metrics: PerformanceMetrics = {
+      positionsEvaluated: emptyPositions.length, // For random, we "evaluate" all available positions
+      thinkingTimeMs: thinkingTime,
+      lastMoveTime: thinkingTime,
+      totalPositionsEvaluated: emptyPositions.length,
+      averageThinkingTime: thinkingTime,
+      movesPlayed: 1
+    };
+
+    return { position, metrics };
   }
 
   /**
-   * Minimax algorithm with alpha-beta pruning
+   * Minimax algorithm with alpha-beta pruning and performance tracking
    * Returns the evaluation score for a given board state
    */
   private static minimax(
@@ -31,6 +71,9 @@ export class TicTacToeAI {
     alpha: number = -Infinity,
     beta: number = Infinity
   ): number {
+    // Count this position evaluation
+    this.incrementPositionCounter();
+    
     const gameResult = TicTacToeGame.evaluateGame(board);
     
     // Terminal states
@@ -76,9 +119,12 @@ export class TicTacToeAI {
   }
 
   /**
-   * Finds the best move using minimax algorithm
+   * Finds the best move using minimax algorithm with performance tracking
    */
-  static getBestMove(board: Board): number {
+  static getBestMove(board: Board): AIResult {
+    const startTime = performance.now();
+    this.resetPositionCounter();
+    
     const emptyPositions = TicTacToeGame.getEmptyPositions(board);
     
     if (emptyPositions.length === 0) {
@@ -98,13 +144,26 @@ export class TicTacToeAI {
       }
     }
     
-    return bestMove;
+    const endTime = performance.now();
+    const thinkingTime = endTime - startTime;
+    const positionsEvaluated = this.getPositionCount();
+
+    const metrics: PerformanceMetrics = {
+      positionsEvaluated,
+      thinkingTimeMs: thinkingTime,
+      lastMoveTime: thinkingTime,
+      totalPositionsEvaluated: positionsEvaluated,
+      averageThinkingTime: thinkingTime,
+      movesPlayed: 1
+    };
+    
+    return { position: bestMove, metrics };
   }
 
   /**
-   * Makes an AI move based on the specified difficulty
+   * Makes an AI move based on the specified difficulty with performance tracking
    */
-  static makeAIMove(board: Board, gameMode: GameMode): number {
+  static makeAIMove(board: Board, gameMode: GameMode): AIResult {
     switch (gameMode) {
       case 'easy':
         return this.makeRandomMove(board);
@@ -127,5 +186,40 @@ export class TicTacToeAI {
       default:
         return 'Unknown difficulty';
     }
+  }
+
+  /**
+   * Updates cumulative performance metrics
+   */
+  static updateCumulativeMetrics(
+    currentMetrics: PerformanceMetrics,
+    newMetrics: PerformanceMetrics
+  ): PerformanceMetrics {
+    const totalMoves = currentMetrics.movesPlayed + 1;
+    const totalPositions = currentMetrics.totalPositionsEvaluated + newMetrics.positionsEvaluated;
+    const totalTime = (currentMetrics.averageThinkingTime * currentMetrics.movesPlayed) + newMetrics.thinkingTimeMs;
+    
+    return {
+      positionsEvaluated: newMetrics.positionsEvaluated,
+      thinkingTimeMs: newMetrics.thinkingTimeMs,
+      lastMoveTime: newMetrics.thinkingTimeMs,
+      totalPositionsEvaluated: totalPositions,
+      averageThinkingTime: totalTime / totalMoves,
+      movesPlayed: totalMoves
+    };
+  }
+
+  /**
+   * Creates initial performance metrics
+   */
+  static createInitialMetrics(): PerformanceMetrics {
+    return {
+      positionsEvaluated: 0,
+      thinkingTimeMs: 0,
+      lastMoveTime: 0,
+      totalPositionsEvaluated: 0,
+      averageThinkingTime: 0,
+      movesPlayed: 0
+    };
   }
 }

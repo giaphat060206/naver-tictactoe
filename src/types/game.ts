@@ -15,6 +15,20 @@ export interface GameResult {
   isGameOver: boolean;
 }
 
+export interface PerformanceMetrics {
+  positionsEvaluated: number;
+  thinkingTimeMs: number;
+  lastMoveTime: number;
+  totalPositionsEvaluated: number;
+  averageThinkingTime: number;
+  movesPlayed: number;
+}
+
+export interface AIResult {
+  position: number;
+  metrics: PerformanceMetrics;
+}
+
 export interface ScoreData {
   wins: number;
   losses: number;

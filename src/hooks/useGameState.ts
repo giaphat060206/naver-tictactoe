@@ -3,6 +3,7 @@ import { GameState, GameMode, Player } from '../types/game';
 import { TicTacToeGame } from '../logic/gameLogic';
 import { TicTacToeAI } from '../logic/aiLogic';
 import { useScoreTracking } from './useScoreTracking';
+import { usePerformanceMetrics } from './usePerformanceMetrics';
 
 /**
  * Custom hook for managing Tic Tac Toe game state
@@ -18,6 +19,7 @@ export const useGameState = () => {
   });
 
   const { scores, recordGameResult, resetAllScores, resetScoresByMode, getScoreSummary } = useScoreTracking();
+  const { metrics, updateMetrics, resetMetrics, getFormattedMetrics, getPerformanceInsights } = usePerformanceMetrics();
 
   /**
    * Resets the game to initial state
@@ -30,7 +32,9 @@ export const useGameState = () => {
       winner: null,
       isGameOver: false
     }));
-  }, []);
+    // Reset performance metrics for new game
+    resetMetrics();
+  }, [resetMetrics]);
 
   /**
    * Changes the game mode and resets the game
@@ -43,7 +47,9 @@ export const useGameState = () => {
       isGameOver: false,
       gameMode: newMode
     });
-  }, []);
+    // Reset performance metrics when changing modes
+    resetMetrics();
+  }, [resetMetrics]);
 
   /**
    * Records the game result when a game ends
@@ -83,9 +89,13 @@ export const useGameState = () => {
     // If playing against AI and it's AI's turn
     if (gameState.gameMode !== 'pvp' && nextPlayer === 'O') {
       try {
-        const aiPosition = TicTacToeAI.makeAIMove(newBoard, gameState.gameMode);
-        const boardWithAIMove = TicTacToeGame.makeMove(newBoard, aiPosition, 'O');
+        // Make AI move with performance tracking
+        const aiResult = TicTacToeAI.makeAIMove(newBoard, gameState.gameMode);
+        const boardWithAIMove = TicTacToeGame.makeMove(newBoard, aiResult.position, 'O');
         const finalGameResult = TicTacToeGame.evaluateGame(boardWithAIMove);
+        
+        // Update performance metrics
+        updateMetrics(aiResult.metrics);
         
         setGameState(prevState => ({
           ...prevState,
@@ -128,7 +138,7 @@ export const useGameState = () => {
         handleGameEnd(gameResult.winner, gameState.gameMode);
       }
     }
-  }, [gameState, handleGameEnd]);
+  }, [gameState, handleGameEnd, updateMetrics]);
 
   /**
    * Gets the current game status message
@@ -171,12 +181,15 @@ export const useGameState = () => {
   return {
     gameState,
     scores,
+    metrics,
     makeMove,
     resetGame,
     changeGameMode,
     getGameStatus,
     resetAllScores,
     resetScoresByMode,
-    getScoreSummary
+    getScoreSummary,
+    getFormattedMetrics,
+    getPerformanceInsights
   };
 };
