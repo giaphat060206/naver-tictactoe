@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { GameState, GameMode, Player } from '../types/game';
 import { TicTacToeGame } from '../logic/gameLogic';
 import { TicTacToeAI } from '../logic/aiLogic';
+import { useScoreTracking } from './useScoreTracking';
 
 /**
  * Custom hook for managing Tic Tac Toe game state
@@ -15,6 +16,8 @@ export const useGameState = () => {
     isGameOver: false,
     gameMode: 'pvp'
   });
+
+  const { scores, recordGameResult, resetAllScores, resetScoresByMode, getScoreSummary } = useScoreTracking();
 
   /**
    * Resets the game to initial state
@@ -43,6 +46,13 @@ export const useGameState = () => {
   }, []);
 
   /**
+   * Records the game result when a game ends
+   */
+  const handleGameEnd = useCallback((winner: Player, gameMode: GameMode) => {
+    recordGameResult(gameMode, winner);
+  }, [recordGameResult]);
+
+  /**
    * Makes a move at the specified position
    */
   const makeMove = useCallback((position: number) => {
@@ -55,7 +65,7 @@ export const useGameState = () => {
     const gameResult = TicTacToeGame.evaluateGame(newBoard);
     let nextPlayer = TicTacToeGame.getNextPlayer(gameState.currentPlayer);
 
-    // If game is over after human move, update state and return
+    // If game is over after human move, update state and record result
     if (gameResult.isGameOver) {
       setGameState(prevState => ({
         ...prevState,
@@ -64,6 +74,9 @@ export const useGameState = () => {
         winner: gameResult.winner,
         isGameOver: true
       }));
+      
+      // Record the game result
+      handleGameEnd(gameResult.winner, gameState.gameMode);
       return;
     }
 
@@ -81,6 +94,11 @@ export const useGameState = () => {
           winner: finalGameResult.winner,
           isGameOver: finalGameResult.isGameOver
         }));
+
+        // Record the game result if the game ended
+        if (finalGameResult.isGameOver) {
+          handleGameEnd(finalGameResult.winner, gameState.gameMode);
+        }
       } catch (error) {
         console.error('AI move failed:', error);
         // Fallback to just human move
@@ -91,6 +109,10 @@ export const useGameState = () => {
           winner: gameResult.winner,
           isGameOver: gameResult.isGameOver
         }));
+        
+        if (gameResult.isGameOver) {
+          handleGameEnd(gameResult.winner, gameState.gameMode);
+        }
       }
     } else {
       // PvP mode or human's turn
@@ -101,8 +123,12 @@ export const useGameState = () => {
         winner: gameResult.winner,
         isGameOver: gameResult.isGameOver
       }));
+      
+      if (gameResult.isGameOver) {
+        handleGameEnd(gameResult.winner, gameState.gameMode);
+      }
     }
-  }, [gameState]);
+  }, [gameState, handleGameEnd]);
 
   /**
    * Gets the current game status message
@@ -144,9 +170,13 @@ export const useGameState = () => {
 
   return {
     gameState,
+    scores,
     makeMove,
     resetGame,
     changeGameMode,
-    getGameStatus
+    getGameStatus,
+    resetAllScores,
+    resetScoresByMode,
+    getScoreSummary
   };
 };

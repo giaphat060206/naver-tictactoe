@@ -6,17 +6,28 @@ import GameModeSelect from './GameModeSelect';
 import GameBoard from './GameBoard';
 import GameStatus from './GameStatus';
 import GameInstructions from './GameInstructions';
+import ScoreBoard from './ScoreBoard';
 
 /**
  * Main Tic Tac Toe Component
  * Orchestrates the game UI using clean architecture principles
  */
 const TicTacToe: React.FC = () => {
-  const { gameState, makeMove, resetGame, changeGameMode, getGameStatus } = useGameState();
+  const { 
+    gameState, 
+    scores, 
+    makeMove, 
+    resetGame, 
+    changeGameMode, 
+    getGameStatus,
+    resetAllScores,
+    resetScoresByMode,
+    getScoreSummary
+  } = useGameState();
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
-      <div className="bg-white rounded-lg shadow-lg p-8">
+      <div className="bg-white rounded-lg shadow-lg p-8 max-w-2xl w-full">
         <h1 className="text-4xl font-bold text-center mb-8 text-gray-800">
           Tic Tac Toe
         </h1>
@@ -24,6 +35,13 @@ const TicTacToe: React.FC = () => {
         <GameModeSelect
           currentMode={gameState.gameMode}
           onModeChange={changeGameMode}
+        />
+
+        <ScoreBoard
+          gameMode={gameState.gameMode}
+          scoreSummary={getScoreSummary(gameState.gameMode)}
+          onResetScores={() => resetScoresByMode(gameState.gameMode)}
+          onResetAllScores={resetAllScores}
         />
         
         <GameStatus
