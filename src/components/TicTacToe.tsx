@@ -58,12 +58,15 @@ const TicTacToe: React.FC = () => {
         <GameStatus
           status={getGameStatus()}
           gameMode={gameState.gameMode}
+          isGameOver={gameState.isGameOver}
+          winner={gameState.winner}
         />
 
         <GameBoard
           board={gameState.board}
           onCellClick={makeMove}
           isGameOver={gameState.isGameOver}
+          winningCombination={gameState.winningCombination}
         />
 
         <div className="text-center">

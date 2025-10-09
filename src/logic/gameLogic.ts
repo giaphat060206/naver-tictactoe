@@ -39,16 +39,29 @@ export class TicTacToeGame {
   }
 
   /**
-   * Checks for a winner on the board
+   * Checks for a winner on the board and returns the winning combination
    */
-  static checkWinner(board: Board): Player {
+  static checkWinner(board: Board): { winner: Player; winningCombination: number[] | null } {
     for (const combination of this.WINNING_COMBINATIONS) {
       const [a, b, c] = combination;
       if (board[a] && board[a] === board[b] && board[a] === board[c]) {
-        return board[a];
+        return {
+          winner: board[a],
+          winningCombination: combination
+        };
       }
     }
-    return null;
+    return {
+      winner: null,
+      winningCombination: null
+    };
+  }
+
+  /**
+   * Legacy method for backward compatibility - returns only the winner
+   */
+  static getWinner(board: Board): Player {
+    return this.checkWinner(board).winner;
   }
 
   /**
@@ -71,12 +84,13 @@ export class TicTacToeGame {
    * Evaluates the game state and returns the result
    */
   static evaluateGame(board: Board): GameResult {
-    const winner = this.checkWinner(board);
-    const isGameOver = winner !== null || this.isBoardFull(board);
+    const winnerResult = this.checkWinner(board);
+    const isGameOver = winnerResult.winner !== null || this.isBoardFull(board);
     
     return {
-      winner,
-      isGameOver
+      winner: winnerResult.winner,
+      isGameOver,
+      winningCombination: winnerResult.winningCombination
     };
   }
 

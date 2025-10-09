@@ -15,7 +15,8 @@ export const useGameState = () => {
     currentPlayer: 'X',
     winner: null,
     isGameOver: false,
-    gameMode: 'pvp'
+    gameMode: 'pvp',
+    winningCombination: null
   });
 
   const { scores, recordGameResult, resetAllScores, resetScoresByMode, getScoreSummary } = useScoreTracking();
@@ -30,7 +31,8 @@ export const useGameState = () => {
       board: TicTacToeGame.createEmptyBoard(),
       currentPlayer: 'X',
       winner: null,
-      isGameOver: false
+      isGameOver: false,
+      winningCombination: null
     }));
     // Reset performance metrics for new game
     resetMetrics();
@@ -45,7 +47,8 @@ export const useGameState = () => {
       currentPlayer: 'X',
       winner: null,
       isGameOver: false,
-      gameMode: newMode
+      gameMode: newMode,
+      winningCombination: null
     });
     // Reset performance metrics when changing modes
     resetMetrics();
@@ -78,7 +81,8 @@ export const useGameState = () => {
         board: newBoard,
         currentPlayer: nextPlayer,
         winner: gameResult.winner,
-        isGameOver: true
+        isGameOver: true,
+        winningCombination: gameResult.winningCombination
       }));
       
       // Record the game result
@@ -102,7 +106,8 @@ export const useGameState = () => {
           board: boardWithAIMove,
           currentPlayer: 'X', // Back to human
           winner: finalGameResult.winner,
-          isGameOver: finalGameResult.isGameOver
+          isGameOver: finalGameResult.isGameOver,
+          winningCombination: finalGameResult.winningCombination
         }));
 
         // Record the game result if the game ended
@@ -117,7 +122,8 @@ export const useGameState = () => {
           board: newBoard,
           currentPlayer: nextPlayer,
           winner: gameResult.winner,
-          isGameOver: gameResult.isGameOver
+          isGameOver: gameResult.isGameOver,
+          winningCombination: gameResult.winningCombination
         }));
         
         if (gameResult.isGameOver) {
@@ -131,7 +137,8 @@ export const useGameState = () => {
         board: newBoard,
         currentPlayer: nextPlayer,
         winner: gameResult.winner,
-        isGameOver: gameResult.isGameOver
+        isGameOver: gameResult.isGameOver,
+        winningCombination: gameResult.winningCombination
       }));
       
       if (gameResult.isGameOver) {

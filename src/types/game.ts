@@ -8,11 +8,13 @@ export interface GameState {
   winner: Player;
   isGameOver: boolean;
   gameMode: GameMode;
+  winningCombination: number[] | null;
 }
 
 export interface GameResult {
   winner: Player;
   isGameOver: boolean;
+  winningCombination: number[] | null;
 }
 
 export interface PerformanceMetrics {
