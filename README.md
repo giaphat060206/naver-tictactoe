@@ -451,27 +451,6 @@ npm update @types/react @types/node
 - **Memory Usage**: Browser localStorage limits (~5-10MB typically)
 - **Mobile Performance**: Ensure hardware acceleration enabled
 
-## 📋 Browser Support
-
-- **Chrome** 90+ ✅
-- **Firefox** 88+ ✅  
-- **Safari** 14+ ✅
-- **Edge** 90+ ✅
-- **Mobile Safari** 14+ ✅
-- **Mobile Chrome** 90+ ✅
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Commit changes: `git commit -m 'Add amazing feature'`
-4. Push to branch: `git push origin feature/amazing-feature`
-5. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
 ## 🏆 Credits
 
 - **Algorithm**: Minimax with Alpha-Beta pruning implementation
@@ -479,14 +458,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Performance**: Optimized with Next.js 15 and Turbopack
 - **Analytics**: Custom performance tracking system
 
-## 📞 Support
+**Built for the Naver Hackathon 2025**
 
-- **Issues**: [GitHub Issues](https://github.com/giaphat060206/naver-tictactoe/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/giaphat060206/naver-tictactoe/discussions)
-- **Email**: [Your Contact Email]
-
----
-
-**Built with ❤️ for the Naver Hackathon 2025**
-
-*Enjoy playing and may the best strategist win! 🎮*

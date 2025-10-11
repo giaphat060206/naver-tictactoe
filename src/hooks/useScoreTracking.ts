@@ -7,8 +7,14 @@ import { ScoreManager } from '../logic/scoreManager';
  */
 export const useScoreTracking = () => {
   const [scores, setScores] = useState<GameModeScores>(() => 
-    ScoreManager.loadScores()
+    ScoreManager.createInitialScores()
   );
+
+  // Load scores from localStorage after component mounts (client-side only)
+  useEffect(() => {
+    const loadedScores = ScoreManager.loadScores();
+    setScores(loadedScores);
+  }, []);
 
   /**
    * Records a game result and updates scores

@@ -24,7 +24,7 @@ export class ScoreManager {
   /**
    * Creates initial scores for all game modes
    */
-  private static createInitialScores(): GameModeScores {
+  static createInitialScores(): GameModeScores {
     return {
       pvp: {
         playerX: this.createInitialScoreData(),
@@ -40,6 +40,11 @@ export class ScoreManager {
    */
   static loadScores(): GameModeScores {
     try {
+      // Check if we're on the client side (not during SSR)
+      if (typeof window === 'undefined') {
+        return this.createInitialScores();
+      }
+      
       const stored = localStorage.getItem(this.STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
@@ -60,6 +65,11 @@ export class ScoreManager {
    */
   static saveScores(scores: GameModeScores): void {
     try {
+      // Check if we're on the client side (not during SSR)
+      if (typeof window === 'undefined') {
+        return;
+      }
+      
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(scores));
     } catch (error) {
       console.warn('Failed to save scores to localStorage:', error);
