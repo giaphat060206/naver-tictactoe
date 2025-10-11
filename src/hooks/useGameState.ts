@@ -103,7 +103,7 @@ export const useGameState = () => {
     // Make human move
     const newBoard = TicTacToeGame.makeMove(gameState.board, position, gameState.currentPlayer);
     const gameResult = TicTacToeGame.evaluateGame(newBoard);
-    let nextPlayer = TicTacToeGame.getNextPlayer(gameState.currentPlayer);
+    const nextPlayer = TicTacToeGame.getNextPlayer(gameState.currentPlayer);
 
     // Record the human move
     const updatedMoveHistory = MoveHistoryManager.addMove(

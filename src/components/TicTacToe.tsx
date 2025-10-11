@@ -17,7 +17,6 @@ import { MoveHistory } from './MoveHistory';
 const TicTacToe: React.FC = () => {
   const { 
     gameState, 
-    scores, 
     makeMove, 
     resetGame,
     revertToMove,

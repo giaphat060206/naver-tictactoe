@@ -1,4 +1,4 @@
-import { Board, Player, GameMode, PerformanceMetrics, AIResult } from '../types/game';
+import { Board, GameMode, PerformanceMetrics, AIResult } from '../types/game';
 import { TicTacToeGame } from './gameLogic';
 
 /**

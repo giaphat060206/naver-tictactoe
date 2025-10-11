@@ -14,7 +14,7 @@ interface GameStatusProps {
  */
 const GameStatus: React.FC<GameStatusProps> = ({ status, gameMode, isGameOver, winner }) => {
   const getStatusStyle = (): string => {
-    let baseStyle = "text-xl font-semibold mb-6 transition-all duration-500";
+    const baseStyle = "text-xl font-semibold mb-6 transition-all duration-500";
     
     if (isGameOver && winner) {
       // Add celebration styling for wins
