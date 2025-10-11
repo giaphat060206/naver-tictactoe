@@ -41,7 +41,7 @@ const TicTacToe: React.FC = () => {
           onModeChange={changeGameMode}
         />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div className={`mb-6 ${gameState.gameMode === 'pvp' ? 'flex justify-center' : 'grid grid-cols-1 lg:grid-cols-2 gap-6'}`}>
           <ScoreBoard
             gameMode={gameState.gameMode}
             scoreSummary={getScoreSummary(gameState.gameMode)}

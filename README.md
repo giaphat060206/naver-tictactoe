@@ -364,18 +364,7 @@ yarn dev / pnpm dev / bun dev     # Alternative package managers
 
 ## 🚀 Deployment
 
-### Vercel (Recommended)
-```bash
-# Deploy to Vercel
-npx vercel
-
-# Or connect your Git repository to Vercel for automatic deployments
-```
-
-### Other Platforms
-- **Netlify**: `npm run build` → Deploy `dist` folder
-- **Heroku**: Configure `package.json` scripts for production
-- **Docker**: Containerize with Next.js production image
+- **Vercel website**: https://naver-tictactoe-j1ua4bboi-tommy060206s-projects.vercel.app/
 
 ## 🔧 Customization
 
