@@ -364,7 +364,7 @@ yarn dev / pnpm dev / bun dev     # Alternative package managers
 
 ## 🚀 Deployment
 
-- **Vercel website**: https://naver-tictactoe-j1ua4bboi-tommy060206s-projects.vercel.app/
+- **Vercel website**: https://naver-tictactoe-lac.vercel.app/
 
 ## 🔧 Customization
 
