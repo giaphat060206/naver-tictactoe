@@ -132,55 +132,69 @@ export const useGameState = () => {
 
     // If playing against AI and it's AI's turn
     if (gameState.gameMode !== 'pvp' && nextPlayer === 'O') {
-      try {
-        // Make AI move with performance tracking
-        const aiResult = TicTacToeAI.makeAIMove(newBoard, gameState.gameMode);
-        const boardWithAIMove = TicTacToeGame.makeMove(newBoard, aiResult.position, 'O');
-        const finalGameResult = TicTacToeGame.evaluateGame(boardWithAIMove);
-        
-        // Record the AI move
-        const finalMoveHistory = MoveHistoryManager.addMove(
-          updatedMoveHistory,
-          aiResult.position,
-          'O',
-          boardWithAIMove,
-          true // isAI = true
-        );
-        
-        // Update performance metrics
-        updateMetrics(aiResult.metrics);
-        
-        setGameState(prevState => ({
-          ...prevState,
-          board: boardWithAIMove,
-          currentPlayer: 'X', // Back to human
-          winner: finalGameResult.winner,
-          isGameOver: finalGameResult.isGameOver,
-          winningCombination: finalGameResult.winningCombination,
-          moveHistory: finalMoveHistory
-        }));
+      // Update to AI's turn first
+      setGameState(prevState => ({
+        ...prevState,
+        board: newBoard,
+        currentPlayer: nextPlayer,
+        winner: gameResult.winner,
+        isGameOver: gameResult.isGameOver,
+        winningCombination: gameResult.winningCombination,
+        moveHistory: updatedMoveHistory
+      }));
 
-        // Record the game result if the game ended
-        if (finalGameResult.isGameOver) {
-          handleGameEnd(finalGameResult.winner, gameState.gameMode);
+      // Add 500ms delay before AI makes its move
+      setTimeout(() => {
+        try {
+          // Make AI move with performance tracking
+          const aiResult = TicTacToeAI.makeAIMove(newBoard, gameState.gameMode);
+          const boardWithAIMove = TicTacToeGame.makeMove(newBoard, aiResult.position, 'O');
+          const finalGameResult = TicTacToeGame.evaluateGame(boardWithAIMove);
+          
+          // Record the AI move
+          const finalMoveHistory = MoveHistoryManager.addMove(
+            updatedMoveHistory,
+            aiResult.position,
+            'O',
+            boardWithAIMove,
+            true // isAI = true
+          );
+          
+          // Update performance metrics
+          updateMetrics(aiResult.metrics);
+          
+          setGameState(prevState => ({
+            ...prevState,
+            board: boardWithAIMove,
+            currentPlayer: 'X', // Back to human
+            winner: finalGameResult.winner,
+            isGameOver: finalGameResult.isGameOver,
+            winningCombination: finalGameResult.winningCombination,
+            moveHistory: finalMoveHistory
+          }));
+
+          // Record the game result if the game ended
+          if (finalGameResult.isGameOver) {
+            handleGameEnd(finalGameResult.winner, gameState.gameMode);
+          }
+        } catch (error) {
+          console.error('AI move failed:', error);
+          // Fallback to just human move
+          setGameState(prevState => ({
+            ...prevState,
+            board: newBoard,
+            currentPlayer: nextPlayer,
+            winner: gameResult.winner,
+            isGameOver: gameResult.isGameOver,
+            winningCombination: gameResult.winningCombination,
+            moveHistory: updatedMoveHistory
+          }));
+          
+          if (gameResult.isGameOver) {
+            handleGameEnd(gameResult.winner, gameState.gameMode);
+          }
         }
-      } catch (error) {
-        console.error('AI move failed:', error);
-        // Fallback to just human move
-        setGameState(prevState => ({
-          ...prevState,
-          board: newBoard,
-          currentPlayer: nextPlayer,
-          winner: gameResult.winner,
-          isGameOver: gameResult.isGameOver,
-          winningCombination: gameResult.winningCombination,
-          moveHistory: updatedMoveHistory
-        }));
-        
-        if (gameResult.isGameOver) {
-          handleGameEnd(gameResult.winner, gameState.gameMode);
-        }
-      }
+      }, 500); // 500ms delay
     } else {
       // PvP mode or human's turn
       setGameState(prevState => ({
@@ -218,7 +232,7 @@ export const useGameState = () => {
     if (gameState.gameMode === 'pvp') {
       return `Player ${gameState.currentPlayer}'s turn`;
     } else {
-      return gameState.currentPlayer === 'X' ? 'Your turn' : 'AI is thinking... 🤔';
+      return gameState.currentPlayer === 'X' ? 'Your turn (X)' : "AI's turn (O)";
     }
   }, [gameState]);
 

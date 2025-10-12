@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Board, Player } from '../types/game';
 
 interface GameBoardProps {
@@ -10,7 +10,7 @@ interface GameBoardProps {
 
 /**
  * Game Board Component
- * Renders the 3x3 Tic Tac Toe board with winning combination highlighting
+ * Renders the 3x3 Tic Tac Toe board with winning combination highlighting and fade-in animations
  */
 const GameBoard: React.FC<GameBoardProps> = ({ 
   board, 
@@ -18,6 +18,32 @@ const GameBoard: React.FC<GameBoardProps> = ({
   isGameOver, 
   winningCombination 
 }) => {
+  const [animatingCells, setAnimatingCells] = useState<Set<number>>(new Set());
+  const [previousBoard, setPreviousBoard] = useState<Board>(board);
+
+  // Track board changes to trigger animations
+  useEffect(() => {
+    const newAnimatingCells = new Set<number>();
+    
+    board.forEach((cell, index) => {
+      if (cell && cell !== previousBoard[index]) {
+        newAnimatingCells.add(index);
+      }
+    });
+    
+    if (newAnimatingCells.size > 0) {
+      setAnimatingCells(newAnimatingCells);
+      
+      // Remove animation after 300ms
+      const timer = setTimeout(() => {
+        setAnimatingCells(new Set());
+      }, 300);
+      
+      setPreviousBoard([...board]);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [board, previousBoard]);
   const getCellStyle = (position: number): string => {
     let baseStyle = "w-20 h-20 border-2 border-gray-400 flex items-center justify-center text-3xl font-bold cursor-pointer transition-all duration-300";
     
@@ -38,16 +64,24 @@ const GameBoard: React.FC<GameBoardProps> = ({
 
   const getPlayerColor = (player: Player, position: number): string => {
     const isWinningCell = winningCombination?.includes(position);
+    const isAnimating = animatingCells.has(position);
     
+    let baseColor = '';
     if (isWinningCell) {
       // Make winning pieces stand out more
-      if (player === 'X') return 'text-blue-800 font-extrabold drop-shadow-lg';
-      if (player === 'O') return 'text-red-800 font-extrabold drop-shadow-lg';
+      if (player === 'X') baseColor = 'text-blue-800 font-extrabold drop-shadow-lg';
+      if (player === 'O') baseColor = 'text-red-800 font-extrabold drop-shadow-lg';
     } else {
-      if (player === 'X') return 'text-blue-600';
-      if (player === 'O') return 'text-red-600';
+      if (player === 'X') baseColor = 'text-blue-600';
+      if (player === 'O') baseColor = 'text-red-600';
     }
-    return '';
+    
+    // Add fade-in animation for newly placed pieces
+    if (isAnimating) {
+      baseColor += ' animate-pulse opacity-0 animate-fade-in';
+    }
+    
+    return baseColor;
   };
 
   return (
@@ -62,7 +96,11 @@ const GameBoard: React.FC<GameBoardProps> = ({
             winningCombination?.includes(index) ? ', winning cell' : ''
           }`}
         >
-          <span className={getPlayerColor(cell, index)}>
+          <span 
+            className={`${getPlayerColor(cell, index)} transition-all duration-300 ${
+              animatingCells.has(index) ? 'animate-fade-in' : ''
+            }`}
+          >
             {cell}
           </span>
         </button>
