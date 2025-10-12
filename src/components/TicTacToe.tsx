@@ -68,6 +68,8 @@ const TicTacToe: React.FC = () => {
           onCellClick={makeMove}
           isGameOver={gameState.isGameOver}
           winningCombination={gameState.winningCombination}
+          gameMode={gameState.gameMode}
+          currentPlayer={gameState.currentPlayer}
         />
 
         {gameState.moveHistory.length > 0 && (

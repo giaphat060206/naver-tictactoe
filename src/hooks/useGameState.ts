@@ -194,7 +194,7 @@ export const useGameState = () => {
             handleGameEnd(gameResult.winner, gameState.gameMode);
           }
         }
-      }, 500); // 500ms delay
+      }, 1000); // 1000ms delay (1 second)
     } else {
       // PvP mode or human's turn
       setGameState(prevState => ({

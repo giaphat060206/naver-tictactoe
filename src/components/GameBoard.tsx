@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Board, Player } from '../types/game';
+import { Board, Player, GameMode } from '../types/game';
 
 interface GameBoardProps {
   board: Board;
   onCellClick: (position: number) => void;
   isGameOver: boolean;
   winningCombination: number[] | null;
+  gameMode: GameMode;
+  currentPlayer: Player;
 }
 
 /**
@@ -16,7 +18,9 @@ const GameBoard: React.FC<GameBoardProps> = ({
   board, 
   onCellClick, 
   isGameOver, 
-  winningCombination 
+  winningCombination,
+  gameMode,
+  currentPlayer
 }) => {
   const [animatingCells, setAnimatingCells] = useState<Set<number>>(new Set());
   const [previousBoard, setPreviousBoard] = useState<Board>(board);
@@ -84,6 +88,9 @@ const GameBoard: React.FC<GameBoardProps> = ({
     return baseColor;
   };
 
+  // Check if it's AI's turn to disable board interaction
+  const isAITurn = gameMode !== 'pvp' && currentPlayer === 'O';
+
   return (
     <div className="grid grid-cols-3 gap-1 mb-6 mx-auto w-fit">
       {board.map((cell, index) => (
@@ -91,7 +98,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
           key={index}
           className={getCellStyle(index)}
           onClick={() => onCellClick(index)}
-          disabled={isGameOver || cell !== null}
+          disabled={isGameOver || cell !== null || isAITurn}
           aria-label={`Cell ${index + 1}, ${cell || 'empty'}${
             winningCombination?.includes(index) ? ', winning cell' : ''
           }`}
