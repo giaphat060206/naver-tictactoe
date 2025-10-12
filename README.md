@@ -9,7 +9,7 @@ A sophisticated Tic Tac Toe game built with **Next.js 15**, **React 19**, and **
 - 📊 **Performance Analytics**: Real-time AI performance metrics
 - 🏆 **Score Tracking**: Persistent score history with localStorage
 - 📜 **Move History**: Complete game replay with revert functionality
-- 🎨 **Visual Highlights**: Winning combinations with golden glow effects
+- 🎨 **Visual Highlights**: Clear UI with eye-catching animation and effects
 - 📱 **Responsive Design**: Perfect on desktop and mobile
 - ⚡ **Fast Performance**: Built with Next.js 15 and Turbopack
 
