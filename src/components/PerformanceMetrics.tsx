@@ -16,6 +16,7 @@ interface PerformanceMetricsProps {
     };
   } | null;
   insights: string[] | null;
+  isGameOver: boolean;
 }
 
 /**
@@ -25,7 +26,8 @@ interface PerformanceMetricsProps {
 const PerformanceMetrics: React.FC<PerformanceMetricsProps> = ({ 
   gameMode, 
   formattedMetrics, 
-  insights 
+  insights,
+  isGameOver
 }) => {
   // Don't render for PvP mode or when no metrics available
   if (gameMode === 'pvp' || !formattedMetrics) {
@@ -104,8 +106,8 @@ const PerformanceMetrics: React.FC<PerformanceMetricsProps> = ({
         </div>
       </div>
 
-      {/* Performance Insights */}
-      {insights && insights.length > 0 && (
+      {/* Performance Insights - Only show after game is finished */}
+      {isGameOver && insights && insights.length > 0 && (
         <div className="bg-white rounded-lg p-3 border-l-4 border-yellow-500">
           <h3 className="font-semibold text-gray-700 mb-2 text-sm">Performance Insights</h3>
           <div className="flex flex-wrap gap-2">

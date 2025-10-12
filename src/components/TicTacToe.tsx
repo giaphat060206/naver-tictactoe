@@ -53,6 +53,7 @@ const TicTacToe: React.FC = () => {
             gameMode={gameState.gameMode}
             formattedMetrics={getFormattedMetrics(gameState.gameMode)}
             insights={getPerformanceInsights(gameState.gameMode)}
+            isGameOver={gameState.isGameOver}
           />
         </div>
         
