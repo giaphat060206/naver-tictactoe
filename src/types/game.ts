@@ -1,5 +1,5 @@
-export type Player = 'X' | 'O' | null;
-export type Board = Player[];
+export type Player = 'odd' | 'even' | null;
+export type Board = number[]; // Array of numbers (0-n) representing square values
 export type GameMode = 'pvp' | 'easy' | 'hard';
 
 export interface Move {
@@ -9,6 +9,7 @@ export interface Move {
   timestamp: number;
   isAI?: boolean;
   boardSnapshot: Board; // Board state after this move
+  incrementValue: number; // The value the square was incremented to
 }
 
 export interface GameState {
@@ -52,8 +53,8 @@ export interface ScoreData {
 
 export interface GameModeScores {
   pvp: {
-    playerX: ScoreData;
-    playerO: ScoreData;
+    odd: ScoreData;
+    even: ScoreData;
   };
   easy: ScoreData;
   hard: ScoreData;

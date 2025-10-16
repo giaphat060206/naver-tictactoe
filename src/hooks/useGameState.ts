@@ -1,19 +1,19 @@
 import { useState, useCallback, useEffect } from 'react';
 import { GameState, GameMode, Player } from '../types/game';
-import { TicTacToeGame } from '../logic/gameLogic';
-import { TicTacToeAI } from '../logic/aiLogic';
+import { OddEvenGame } from '../logic/gameLogic';
+import { OddEvenAI } from '../logic/aiLogic';
 import { useScoreTracking } from './useScoreTracking';
 import { usePerformanceMetrics } from './usePerformanceMetrics';
 import { MoveHistoryManager } from '../utils/moveHistory';
 
 /**
- * Custom hook for managing Tic Tac Toe game state
+ * Custom hook for managing Odd/Even game state
  * Encapsulates all game logic and provides clean interface for UI components
  */
 export const useGameState = () => {
   const [gameState, setGameState] = useState<GameState>({
-    board: TicTacToeGame.createEmptyBoard(),
-    currentPlayer: 'X',
+    board: OddEvenGame.createEmptyBoard(),
+    currentPlayer: 'odd',
     winner: null,
     isGameOver: false,
     gameMode: 'pvp',
@@ -30,8 +30,8 @@ export const useGameState = () => {
   const resetGame = useCallback(() => {
     setGameState(prevState => ({
       ...prevState,
-      board: TicTacToeGame.createEmptyBoard(),
-      currentPlayer: 'X',
+      board: OddEvenGame.createEmptyBoard(),
+      currentPlayer: 'odd',
       winner: null,
       isGameOver: false,
       winningCombination: null,
@@ -55,7 +55,7 @@ export const useGameState = () => {
     const nextPlayer = MoveHistoryManager.getNextPlayerAfterRevert(gameState.moveHistory, moveIndex);
     
     // Evaluate the game state at this point
-    const gameResult = TicTacToeGame.evaluateGame(revertedBoard);
+    const gameResult = OddEvenGame.evaluateGame(revertedBoard);
 
     setGameState(prevState => ({
       ...prevState,
@@ -73,8 +73,8 @@ export const useGameState = () => {
    */
   const changeGameMode = useCallback((newMode: GameMode) => {
     setGameState({
-      board: TicTacToeGame.createEmptyBoard(),
-      currentPlayer: 'X',
+      board: OddEvenGame.createEmptyBoard(),
+      currentPlayer: 'odd',
       winner: null,
       isGameOver: false,
       gameMode: newMode,
@@ -96,14 +96,14 @@ export const useGameState = () => {
    * Makes a move at the specified position
    */
   const makeMove = useCallback((position: number) => {
-    if (gameState.isGameOver || !TicTacToeGame.isValidMove(gameState.board, position)) {
+    if (gameState.isGameOver || !OddEvenGame.isValidMove(gameState.board, position)) {
       return;
     }
 
     // Make human move
-    const newBoard = TicTacToeGame.makeMove(gameState.board, position, gameState.currentPlayer);
-    const gameResult = TicTacToeGame.evaluateGame(newBoard);
-    const nextPlayer = TicTacToeGame.getNextPlayer(gameState.currentPlayer);
+    const newBoard = OddEvenGame.makeMove(gameState.board, position, gameState.currentPlayer);
+    const gameResult = OddEvenGame.evaluateGame(newBoard);
+    const nextPlayer = OddEvenGame.getNextPlayer(gameState.currentPlayer);
 
     // Record the human move
     const updatedMoveHistory = MoveHistoryManager.addMove(
@@ -131,7 +131,7 @@ export const useGameState = () => {
     }
 
     // If playing against AI and it's AI's turn
-    if (gameState.gameMode !== 'pvp' && nextPlayer === 'O') {
+    if (gameState.gameMode !== 'pvp' && nextPlayer === 'even') {
       // Update to AI's turn first
       setGameState(prevState => ({
         ...prevState,
@@ -147,15 +147,15 @@ export const useGameState = () => {
       setTimeout(() => {
         try {
           // Make AI move with performance tracking
-          const aiResult = TicTacToeAI.makeAIMove(newBoard, gameState.gameMode);
-          const boardWithAIMove = TicTacToeGame.makeMove(newBoard, aiResult.position, 'O');
-          const finalGameResult = TicTacToeGame.evaluateGame(boardWithAIMove);
+          const aiResult = OddEvenAI.makeAIMove(newBoard, gameState.gameMode, 'even');
+          const boardWithAIMove = OddEvenGame.makeMove(newBoard, aiResult.position, 'even');
+          const finalGameResult = OddEvenGame.evaluateGame(boardWithAIMove);
           
           // Record the AI move
           const finalMoveHistory = MoveHistoryManager.addMove(
             updatedMoveHistory,
             aiResult.position,
-            'O',
+            'even',
             boardWithAIMove,
             true // isAI = true
           );
@@ -166,7 +166,7 @@ export const useGameState = () => {
           setGameState(prevState => ({
             ...prevState,
             board: boardWithAIMove,
-            currentPlayer: 'X', // Back to human
+            currentPlayer: 'odd', // Back to human
             winner: finalGameResult.winner,
             isGameOver: finalGameResult.isGameOver,
             winningCombination: finalGameResult.winningCombination,
@@ -219,9 +219,9 @@ export const useGameState = () => {
   const getGameStatus = useCallback((): string => {
     if (gameState.winner) {
       if (gameState.gameMode === 'pvp') {
-        return `Player ${gameState.winner} wins!`;
+        return gameState.winner === 'odd' ? 'Odd Player wins! 🔢' : 'Even Player wins! 🔢';
       } else {
-        return gameState.winner === 'X' ? 'You win! 🎉' : 'AI wins! 🤖';
+        return gameState.winner === 'odd' ? 'You win! 🎉' : 'AI wins! 🤖';
       }
     }
     
@@ -230,9 +230,9 @@ export const useGameState = () => {
     }
     
     if (gameState.gameMode === 'pvp') {
-      return `Player ${gameState.currentPlayer}'s turn`;
+      return gameState.currentPlayer === 'odd' ? 'Odd Player\'s turn' : 'Even Player\'s turn';
     } else {
-      return gameState.currentPlayer === 'X' ? 'Your turn (X)' : "AI's turn (O)";
+      return gameState.currentPlayer === 'odd' ? 'Your turn (Odd)' : "AI's turn (Even)";
     }
   }, [gameState]);
 
@@ -241,7 +241,7 @@ export const useGameState = () => {
    */
   useEffect(() => {
     // Add slight delay for AI moves to make it feel more natural
-    if (gameState.gameMode !== 'pvp' && gameState.currentPlayer === 'O' && !gameState.isGameOver) {
+    if (gameState.gameMode !== 'pvp' && gameState.currentPlayer === 'even' && !gameState.isGameOver) {
       const timer = setTimeout(() => {
         // This effect is just for visual feedback
         // The actual AI move is handled in makeMove function

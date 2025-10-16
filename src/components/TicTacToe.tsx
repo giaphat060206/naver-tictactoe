@@ -33,7 +33,7 @@ const TicTacToe: React.FC = () => {
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
       <div className="bg-white rounded-lg shadow-lg p-8 max-w-4xl w-full">
         <h1 className="text-4xl font-bold text-center mb-8 text-gray-800">
-          Tic Tac Toe
+          Odd/Even Game
         </h1>
         
         <GameModeSelect

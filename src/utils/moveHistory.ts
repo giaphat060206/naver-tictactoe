@@ -13,7 +13,8 @@ export class MoveHistoryManager {
     player: Player,
     moveNumber: number,
     boardSnapshot: Board,
-    isAI: boolean = false
+    isAI: boolean = false,
+    incrementValue?: number
   ): Move {
     return {
       position,
@@ -21,7 +22,8 @@ export class MoveHistoryManager {
       moveNumber,
       timestamp: Date.now(),
       isAI,
-      boardSnapshot: [...boardSnapshot] // Create a copy of the board
+      boardSnapshot: [...boardSnapshot], // Create a copy of the board
+      incrementValue: incrementValue || boardSnapshot[position]
     };
   }
 
@@ -57,7 +59,7 @@ export class MoveHistoryManager {
   static formatMove(move: Move, gameMode: string): string {
     const coordinate = this.positionToCoordinate(move.position);
     const playerDisplay = this.getPlayerDisplay(move.player, move.isAI || false, gameMode);
-    return `${move.moveNumber}. ${playerDisplay} → ${coordinate}`;
+    return `${move.moveNumber}. ${playerDisplay} → ${coordinate} (${move.incrementValue})`;
   }
 
   /**
@@ -65,12 +67,12 @@ export class MoveHistoryManager {
    */
   private static getPlayerDisplay(player: Player, isAI: boolean, gameMode: string): string {
     if (gameMode === 'pvp') {
-      return `Player ${player}`;
+      return player === 'odd' ? 'Odd Player' : 'Even Player';
     } else {
-      if (player === 'X') {
+      if (player === 'odd') {
         return 'You';
       } else {
-        return isAI ? 'AI' : 'Player O';
+        return isAI ? 'AI' : 'Even Player';
       }
     }
   }
@@ -169,12 +171,12 @@ export class MoveHistoryManager {
    */
   static getNextPlayerAfterRevert(history: Move[], moveIndex: number): Player {
     if (moveIndex < 0 || moveIndex >= history.length) {
-      return 'X'; // Default to X if invalid index
+      return 'odd'; // Default to odd player if invalid index
     }
     
     // The next player is the opposite of the player who made the move at moveIndex
     const lastPlayer = history[moveIndex].player;
-    return lastPlayer === 'X' ? 'O' : 'X';
+    return lastPlayer === 'odd' ? 'even' : 'odd';
   }
 
   /**

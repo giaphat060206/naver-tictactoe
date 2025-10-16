@@ -27,8 +27,8 @@ export class ScoreManager {
   static createInitialScores(): GameModeScores {
     return {
       pvp: {
-        playerX: this.createInitialScoreData(),
-        playerO: this.createInitialScoreData()
+        odd: this.createInitialScoreData(),
+        even: this.createInitialScoreData()
       },
       easy: this.createInitialScoreData(),
       hard: this.createInitialScoreData()
@@ -123,23 +123,23 @@ export class ScoreManager {
 
     if (gameMode === 'pvp') {
       // In PvP mode, update both players
-      if (winner === 'X') {
-        newScores.pvp.playerX = this.updateScoreData(scores.pvp.playerX, 'win');
-        newScores.pvp.playerO = this.updateScoreData(scores.pvp.playerO, 'loss');
-      } else if (winner === 'O') {
-        newScores.pvp.playerX = this.updateScoreData(scores.pvp.playerX, 'loss');
-        newScores.pvp.playerO = this.updateScoreData(scores.pvp.playerO, 'win');
+      if (winner === 'odd') {
+        newScores.pvp.odd = this.updateScoreData(scores.pvp.odd, 'win');
+        newScores.pvp.even = this.updateScoreData(scores.pvp.even, 'loss');
+      } else if (winner === 'even') {
+        newScores.pvp.odd = this.updateScoreData(scores.pvp.odd, 'loss');
+        newScores.pvp.even = this.updateScoreData(scores.pvp.even, 'win');
       } else {
         // Draw
-        newScores.pvp.playerX = this.updateScoreData(scores.pvp.playerX, 'draw');
-        newScores.pvp.playerO = this.updateScoreData(scores.pvp.playerO, 'draw');
+        newScores.pvp.odd = this.updateScoreData(scores.pvp.odd, 'draw');
+        newScores.pvp.even = this.updateScoreData(scores.pvp.even, 'draw');
       }
     } else {
-      // AI modes - human is always X, AI is always O
+      // AI modes - human is always odd, AI is always even
       let result: 'win' | 'loss' | 'draw';
-      if (winner === 'X') {
+      if (winner === 'odd') {
         result = 'win';
-      } else if (winner === 'O') {
+      } else if (winner === 'even') {
         result = 'loss';
       } else {
         result = 'draw';
@@ -169,8 +169,8 @@ export class ScoreManager {
     
     if (gameMode === 'pvp') {
       newScores.pvp = {
-        playerX: this.createInitialScoreData(),
-        playerO: this.createInitialScoreData()
+        odd: this.createInitialScoreData(),
+        even: this.createInitialScoreData()
       };
     } else {
       newScores[gameMode] = this.createInitialScoreData();
@@ -212,11 +212,11 @@ export class ScoreManager {
   } {
     if (gameMode === 'pvp') {
       return {
-        primary: scores.pvp.playerX,
-        secondary: scores.pvp.playerO,
+        primary: scores.pvp.odd,
+        secondary: scores.pvp.even,
         labels: {
-          primary: 'Player X',
-          secondary: 'Player O'
+          primary: 'Odd Player',
+          secondary: 'Even Player'
         }
       };
     } else {

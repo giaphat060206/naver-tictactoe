@@ -1,11 +1,11 @@
 import { Board, GameMode, PerformanceMetrics, AIResult } from '../types/game';
-import { TicTacToeGame } from './gameLogic';
+import { OddEvenGame } from './gameLogic';
 
 /**
  * AI Logic Module
- * Contains all AI algorithms separated from game logic and UI
+ * Contains all AI algorithms for the Odd/Even number game
  */
-export class TicTacToeAI {
+export class OddEvenAI {
   // Performance tracking
   private static positionsEvaluated = 0;
 
@@ -36,23 +36,23 @@ export class TicTacToeAI {
   static makeRandomMove(board: Board): AIResult {
     const startTime = performance.now();
     
-    const emptyPositions = TicTacToeGame.getEmptyPositions(board);
+    const availablePositions = OddEvenGame.getEmptyPositions(board);
     
-    if (emptyPositions.length === 0) {
-      throw new Error('No empty positions available');
+    if (availablePositions.length === 0) {
+      throw new Error('No positions available');
     }
     
-    const randomIndex = Math.floor(Math.random() * emptyPositions.length);
-    const position = emptyPositions[randomIndex];
+    const randomIndex = Math.floor(Math.random() * availablePositions.length);
+    const position = availablePositions[randomIndex];
     
     const endTime = performance.now();
     const thinkingTime = endTime - startTime;
 
     const metrics: PerformanceMetrics = {
-      positionsEvaluated: emptyPositions.length, // For random, we "evaluate" all available positions
+      positionsEvaluated: availablePositions.length,
       thinkingTimeMs: thinkingTime,
       lastMoveTime: thinkingTime,
-      totalPositionsEvaluated: emptyPositions.length,
+      totalPositionsEvaluated: availablePositions.length,
       averageThinkingTime: thinkingTime,
       movesPlayed: 1
     };
@@ -61,57 +61,53 @@ export class TicTacToeAI {
   }
 
   /**
-   * Minimax algorithm with alpha-beta pruning and performance tracking
-   * Returns the evaluation score for a given board state
+   * Minimax algorithm adapted for odd/even game
    */
   private static minimax(
     board: Board,
     depth: number,
     isMaximizing: boolean,
+    aiPlayer: 'odd' | 'even',
     alpha: number = -Infinity,
     beta: number = Infinity
   ): number {
-    // Count this position evaluation
     this.incrementPositionCounter();
     
-    const gameResult = TicTacToeGame.evaluateGame(board);
+    const gameResult = OddEvenGame.evaluateGame(board);
     
     // Terminal states
-    if (gameResult.winner === 'O') return 10 - depth; // AI wins (prefer faster wins)
-    if (gameResult.winner === 'X') return depth - 10; // Human wins (prefer slower losses)
-    if (gameResult.isGameOver) return 0; // Tie
+    if (gameResult.winner === aiPlayer) return 10 - depth; // AI wins
+    if (gameResult.winner && gameResult.winner !== aiPlayer) return depth - 10; // Human wins
     
-    const emptyPositions = TicTacToeGame.getEmptyPositions(board);
+    // For odd/even game, we need to limit depth to avoid infinite recursion
+    if (depth >= 3) return 0; // Neutral evaluation at max depth
+    
+    const availablePositions = OddEvenGame.getEmptyPositions(board);
     
     if (isMaximizing) {
       let maxEvaluation = -Infinity;
       
-      for (const position of emptyPositions) {
-        const newBoard = TicTacToeGame.makeMove(board, position, 'O');
-        const evaluation = this.minimax(newBoard, depth + 1, false, alpha, beta);
+      for (const position of availablePositions) {
+        const newBoard = OddEvenGame.makeMove(board, position, aiPlayer);
+        const evaluation = this.minimax(newBoard, depth + 1, false, aiPlayer, alpha, beta);
         maxEvaluation = Math.max(maxEvaluation, evaluation);
         alpha = Math.max(alpha, evaluation);
         
-        // Alpha-beta pruning
-        if (beta <= alpha) {
-          break;
-        }
+        if (beta <= alpha) break; // Alpha-beta pruning
       }
       
       return maxEvaluation;
     } else {
       let minEvaluation = Infinity;
+      const humanPlayer = aiPlayer === 'odd' ? 'even' : 'odd';
       
-      for (const position of emptyPositions) {
-        const newBoard = TicTacToeGame.makeMove(board, position, 'X');
-        const evaluation = this.minimax(newBoard, depth + 1, true, alpha, beta);
+      for (const position of availablePositions) {
+        const newBoard = OddEvenGame.makeMove(board, position, humanPlayer);
+        const evaluation = this.minimax(newBoard, depth + 1, true, aiPlayer, alpha, beta);
         minEvaluation = Math.min(minEvaluation, evaluation);
         beta = Math.min(beta, evaluation);
         
-        // Alpha-beta pruning
-        if (beta <= alpha) {
-          break;
-        }
+        if (beta <= alpha) break; // Alpha-beta pruning
       }
       
       return minEvaluation;
@@ -119,24 +115,24 @@ export class TicTacToeAI {
   }
 
   /**
-   * Finds the best move using minimax algorithm with performance tracking
+   * Finds the best move using minimax algorithm adapted for odd/even game
    */
-  static getBestMove(board: Board): AIResult {
+  static getBestMove(board: Board, aiPlayer: 'odd' | 'even' = 'even'): AIResult {
     const startTime = performance.now();
     this.resetPositionCounter();
     
-    const emptyPositions = TicTacToeGame.getEmptyPositions(board);
+    const availablePositions = OddEvenGame.getEmptyPositions(board);
     
-    if (emptyPositions.length === 0) {
-      throw new Error('No empty positions available');
+    if (availablePositions.length === 0) {
+      throw new Error('No positions available');
     }
     
-    let bestMove = emptyPositions[0];
+    let bestMove = availablePositions[0];
     let bestValue = -Infinity;
     
-    for (const position of emptyPositions) {
-      const newBoard = TicTacToeGame.makeMove(board, position, 'O');
-      const moveValue = this.minimax(newBoard, 0, false);
+    for (const position of availablePositions) {
+      const newBoard = OddEvenGame.makeMove(board, position, aiPlayer);
+      const moveValue = this.minimax(newBoard, 0, false, aiPlayer);
       
       if (moveValue > bestValue) {
         bestValue = moveValue;
@@ -161,14 +157,14 @@ export class TicTacToeAI {
   }
 
   /**
-   * Makes an AI move based on the specified difficulty with performance tracking
+   * Makes an AI move based on the specified difficulty
    */
-  static makeAIMove(board: Board, gameMode: GameMode): AIResult {
+  static makeAIMove(board: Board, gameMode: GameMode, aiPlayer: 'odd' | 'even' = 'even'): AIResult {
     switch (gameMode) {
       case 'easy':
         return this.makeRandomMove(board);
       case 'hard':
-        return this.getBestMove(board);
+        return this.getBestMove(board, aiPlayer);
       default:
         throw new Error(`Unsupported AI game mode: ${gameMode}`);
     }
@@ -182,7 +178,7 @@ export class TicTacToeAI {
       case 'easy':
         return 'Random moves - Good for beginners';
       case 'hard':
-        return 'Optimal play - Nearly unbeatable';
+        return 'Strategic play - Challenging opponent';
       default:
         return 'Unknown difficulty';
     }

@@ -1,13 +1,13 @@
 import { useState, useCallback } from 'react';
 import { PerformanceMetrics, GameMode } from '../types/game';
-import { TicTacToeAI } from '../logic/aiLogic';
+import { OddEvenAI } from '../logic/aiLogic';
 
 /**
  * Custom hook for managing AI performance metrics
  */
 export const usePerformanceMetrics = () => {
   const [metrics, setMetrics] = useState<PerformanceMetrics>(() => 
-    TicTacToeAI.createInitialMetrics()
+    OddEvenAI.createInitialMetrics()
   );
 
   /**
@@ -15,7 +15,7 @@ export const usePerformanceMetrics = () => {
    */
   const updateMetrics = useCallback((newMetrics: PerformanceMetrics) => {
     setMetrics(currentMetrics => 
-      TicTacToeAI.updateCumulativeMetrics(currentMetrics, newMetrics)
+      OddEvenAI.updateCumulativeMetrics(currentMetrics, newMetrics)
     );
   }, []);
 
@@ -23,7 +23,7 @@ export const usePerformanceMetrics = () => {
    * Resets performance metrics
    */
   const resetMetrics = useCallback(() => {
-    setMetrics(TicTacToeAI.createInitialMetrics());
+    setMetrics(OddEvenAI.createInitialMetrics());
   }, []);
 
   /**

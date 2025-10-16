@@ -12,7 +12,7 @@ interface GameBoardProps {
 
 /**
  * Game Board Component
- * Renders the 3x3 Tic Tac Toe board with winning combination highlighting and fade-in animations
+ * Renders the 5x5 Odd/Even number game board with winning combination highlighting
  */
 const GameBoard: React.FC<GameBoardProps> = ({ 
   board, 
@@ -29,8 +29,8 @@ const GameBoard: React.FC<GameBoardProps> = ({
   useEffect(() => {
     const newAnimatingCells = new Set<number>();
     
-    board.forEach((cell, index) => {
-      if (cell && cell !== previousBoard[index]) {
+    board.forEach((value, index) => {
+      if (value !== previousBoard[index]) {
         newAnimatingCells.add(index);
       }
     });
@@ -49,38 +49,48 @@ const GameBoard: React.FC<GameBoardProps> = ({
     }
   }, [board, previousBoard]);
   const getCellStyle = (position: number): string => {
-    let baseStyle = "w-20 h-20 border-2 border-gray-400 flex items-center justify-center text-3xl font-bold cursor-pointer transition-all duration-300";
+    let baseStyle = "w-16 h-16 border-2 border-gray-400 flex items-center justify-center text-lg font-bold cursor-pointer transition-all duration-300 rounded-lg";
     
     // Check if this cell is part of the winning combination
     const isWinningCell = winningCombination?.includes(position);
+    const value = board[position];
     
     if (isWinningCell) {
       // Highlight winning cells with a golden glow
       baseStyle += " bg-gradient-to-br from-yellow-200 to-yellow-300 border-yellow-400 shadow-lg ring-2 ring-yellow-400 animate-pulse";
-    } else if (board[position] || isGameOver) {
-      baseStyle += " cursor-not-allowed hover:bg-gray-100";
+    } else if (value > 0) {
+      // Style based on odd/even value
+      if (value % 2 === 1) {
+        baseStyle += " bg-blue-50 border-blue-300 text-blue-700 hover:bg-blue-100";
+      } else {
+        baseStyle += " bg-red-50 border-red-300 text-red-700 hover:bg-red-100";
+      }
     } else {
-      baseStyle += " hover:bg-gray-100";
+      baseStyle += " bg-gray-50 hover:bg-gray-100 text-gray-400";
     }
     
     return baseStyle;
   };
 
-  const getPlayerColor = (player: Player, position: number): string => {
+  const getValueColor = (value: number, position: number): string => {
     const isWinningCell = winningCombination?.includes(position);
     const isAnimating = animatingCells.has(position);
     
     let baseColor = '';
     if (isWinningCell) {
-      // Make winning pieces stand out more
-      if (player === 'X') baseColor = 'text-blue-800 font-extrabold drop-shadow-lg';
-      if (player === 'O') baseColor = 'text-red-800 font-extrabold drop-shadow-lg';
+      // Make winning numbers stand out more
+      baseColor = 'text-yellow-800 font-extrabold drop-shadow-lg';
+    } else if (value > 0) {
+      if (value % 2 === 1) {
+        baseColor = 'text-blue-600 font-bold';
+      } else {
+        baseColor = 'text-red-600 font-bold';
+      }
     } else {
-      if (player === 'X') baseColor = 'text-blue-600';
-      if (player === 'O') baseColor = 'text-red-600';
+      baseColor = 'text-gray-400';
     }
     
-    // Add fade-in animation for newly placed pieces
+    // Add fade-in animation for newly changed values
     if (isAnimating) {
       baseColor += ' animate-pulse opacity-0 animate-fade-in';
     }
@@ -88,27 +98,27 @@ const GameBoard: React.FC<GameBoardProps> = ({
     return baseColor;
   };
 
-  // Check if it's AI's turn to disable board interaction
-  const isAITurn = gameMode !== 'pvp' && currentPlayer === 'O';
+  // Check if it's AI's turn to disable board interaction  
+  const isAITurn = gameMode !== 'pvp' && currentPlayer === 'even';
 
   return (
-    <div className="grid grid-cols-3 gap-1 mb-6 mx-auto w-fit">
-      {board.map((cell, index) => (
+    <div className="grid grid-cols-5 gap-2 mb-6 mx-auto w-fit"> {/* Changed to 5x5 grid */}
+      {board.map((value, index) => (
         <button
           key={index}
           className={getCellStyle(index)}
           onClick={() => onCellClick(index)}
-          disabled={isGameOver || cell !== null || isAITurn}
-          aria-label={`Cell ${index + 1}, ${cell || 'empty'}${
-            winningCombination?.includes(index) ? ', winning cell' : ''
+          disabled={isGameOver || isAITurn}
+          aria-label={`Square ${index + 1}, value ${value}${
+            winningCombination?.includes(index) ? ', winning square' : ''
           }`}
         >
           <span 
-            className={`${getPlayerColor(cell, index)} transition-all duration-300 ${
+            className={`${getValueColor(value, index)} transition-all duration-300 ${
               animatingCells.has(index) ? 'animate-fade-in' : ''
             }`}
           >
-            {cell}
+            {value > 0 ? value : ''}
           </span>
         </button>
       ))}

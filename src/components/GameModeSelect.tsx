@@ -8,11 +8,11 @@ interface GameModeSelectProps {
 
 /**
  * Game Mode Selection Component
- * Handles switching between different game modes
+ * Handles switching between different Odd/Even game modes
  */
 const GameModeSelect: React.FC<GameModeSelectProps> = ({ currentMode, onModeChange }) => {
   const modes = [
-    { key: 'pvp' as GameMode, label: '2 Players', color: 'bg-blue-500' },
+    { key: 'pvp' as GameMode, label: 'Odd vs Even', color: 'bg-purple-500' },
     { key: 'easy' as GameMode, label: 'Easy AI', color: 'bg-green-500' },
     { key: 'hard' as GameMode, label: 'Hard AI', color: 'bg-red-500' }
   ];
