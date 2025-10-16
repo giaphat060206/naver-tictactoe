@@ -1,9 +1,7 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { GameState, GameMode, Player } from '../types/game';
 import { OddEvenGame } from '../logic/gameLogic';
-import { OddEvenAI } from '../logic/aiLogic';
 import { useScoreTracking } from './useScoreTracking';
-import { usePerformanceMetrics } from './usePerformanceMetrics';
 import { MoveHistoryManager } from '../utils/moveHistory';
 
 /**
@@ -22,7 +20,6 @@ export const useGameState = () => {
   });
 
   const { scores, recordGameResult, resetAllScores, resetScoresByMode, getScoreSummary } = useScoreTracking();
-  const { metrics, updateMetrics, resetMetrics, getFormattedMetrics, getPerformanceInsights } = usePerformanceMetrics();
 
   /**
    * Resets the game to initial state
@@ -37,9 +34,7 @@ export const useGameState = () => {
       winningCombination: null,
       moveHistory: MoveHistoryManager.clearHistory()
     }));
-    // Reset performance metrics for new game
-    resetMetrics();
-  }, [resetMetrics]);
+  }, []);
 
   /**
    * Reverts the game to a specific move in the history
@@ -81,9 +76,7 @@ export const useGameState = () => {
       winningCombination: null,
       moveHistory: MoveHistoryManager.clearHistory()
     });
-    // Reset performance metrics when changing modes
-    resetMetrics();
-  }, [resetMetrics]);
+  }, []);
 
   /**
    * Records the game result when a game ends
@@ -113,148 +106,40 @@ export const useGameState = () => {
       newBoard
     );
 
-    // If game is over after human move, update state and record result
+    // Update state
+    setGameState(prevState => ({
+      ...prevState,
+      board: newBoard,
+      currentPlayer: nextPlayer,
+      winner: gameResult.winner,
+      isGameOver: gameResult.isGameOver,
+      winningCombination: gameResult.winningCombination,
+      moveHistory: updatedMoveHistory
+    }));
+    
     if (gameResult.isGameOver) {
-      setGameState(prevState => ({
-        ...prevState,
-        board: newBoard,
-        currentPlayer: nextPlayer,
-        winner: gameResult.winner,
-        isGameOver: true,
-        winningCombination: gameResult.winningCombination,
-        moveHistory: updatedMoveHistory
-      }));
-      
-      // Record the game result
       handleGameEnd(gameResult.winner, gameState.gameMode);
-      return;
     }
-
-    // If playing against AI and it's AI's turn
-    if (gameState.gameMode !== 'pvp' && nextPlayer === 'even') {
-      // Update to AI's turn first
-      setGameState(prevState => ({
-        ...prevState,
-        board: newBoard,
-        currentPlayer: nextPlayer,
-        winner: gameResult.winner,
-        isGameOver: gameResult.isGameOver,
-        winningCombination: gameResult.winningCombination,
-        moveHistory: updatedMoveHistory
-      }));
-
-      // Add 500ms delay before AI makes its move
-      setTimeout(() => {
-        try {
-          // Make AI move with performance tracking
-          const aiResult = OddEvenAI.makeAIMove(newBoard, gameState.gameMode, 'even');
-          const boardWithAIMove = OddEvenGame.makeMove(newBoard, aiResult.position, 'even');
-          const finalGameResult = OddEvenGame.evaluateGame(boardWithAIMove);
-          
-          // Record the AI move
-          const finalMoveHistory = MoveHistoryManager.addMove(
-            updatedMoveHistory,
-            aiResult.position,
-            'even',
-            boardWithAIMove,
-            true // isAI = true
-          );
-          
-          // Update performance metrics
-          updateMetrics(aiResult.metrics);
-          
-          setGameState(prevState => ({
-            ...prevState,
-            board: boardWithAIMove,
-            currentPlayer: 'odd', // Back to human
-            winner: finalGameResult.winner,
-            isGameOver: finalGameResult.isGameOver,
-            winningCombination: finalGameResult.winningCombination,
-            moveHistory: finalMoveHistory
-          }));
-
-          // Record the game result if the game ended
-          if (finalGameResult.isGameOver) {
-            handleGameEnd(finalGameResult.winner, gameState.gameMode);
-          }
-        } catch (error) {
-          console.error('AI move failed:', error);
-          // Fallback to just human move
-          setGameState(prevState => ({
-            ...prevState,
-            board: newBoard,
-            currentPlayer: nextPlayer,
-            winner: gameResult.winner,
-            isGameOver: gameResult.isGameOver,
-            winningCombination: gameResult.winningCombination,
-            moveHistory: updatedMoveHistory
-          }));
-          
-          if (gameResult.isGameOver) {
-            handleGameEnd(gameResult.winner, gameState.gameMode);
-          }
-        }
-      }, 1000); // 1000ms delay (1 second)
-    } else {
-      // PvP mode or human's turn
-      setGameState(prevState => ({
-        ...prevState,
-        board: newBoard,
-        currentPlayer: nextPlayer,
-        winner: gameResult.winner,
-        isGameOver: gameResult.isGameOver,
-        winningCombination: gameResult.winningCombination,
-        moveHistory: updatedMoveHistory
-      }));
-      
-      if (gameResult.isGameOver) {
-        handleGameEnd(gameResult.winner, gameState.gameMode);
-      }
-    }
-  }, [gameState, handleGameEnd, updateMetrics]);
+  }, [gameState, handleGameEnd]);
 
   /**
    * Gets the current game status message
    */
   const getGameStatus = useCallback((): string => {
     if (gameState.winner) {
-      if (gameState.gameMode === 'pvp') {
-        return gameState.winner === 'odd' ? 'Odd Player wins! 🔢' : 'Even Player wins! 🔢';
-      } else {
-        return gameState.winner === 'odd' ? 'You win! 🎉' : 'AI wins! 🤖';
-      }
+      return gameState.winner === 'odd' ? 'Odd Player wins! 🔢' : 'Even Player wins! 🔢';
     }
     
     if (gameState.isGameOver) {
       return "It's a tie! 🤝";
     }
     
-    if (gameState.gameMode === 'pvp') {
-      return gameState.currentPlayer === 'odd' ? 'Odd Player\'s turn' : 'Even Player\'s turn';
-    } else {
-      return gameState.currentPlayer === 'odd' ? 'Your turn (Odd)' : "AI's turn (Even)";
-    }
+    return gameState.currentPlayer === 'odd' ? 'Odd Player\'s turn' : 'Even Player\'s turn';
   }, [gameState]);
-
-  /**
-   * Effect to handle AI delay for better UX
-   */
-  useEffect(() => {
-    // Add slight delay for AI moves to make it feel more natural
-    if (gameState.gameMode !== 'pvp' && gameState.currentPlayer === 'even' && !gameState.isGameOver) {
-      const timer = setTimeout(() => {
-        // This effect is just for visual feedback
-        // The actual AI move is handled in makeMove function
-      }, 300);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [gameState.currentPlayer, gameState.gameMode, gameState.isGameOver]);
 
   return {
     gameState,
     scores,
-    metrics,
     makeMove,
     resetGame,
     revertToMove,
@@ -262,8 +147,6 @@ export const useGameState = () => {
     getGameStatus,
     resetAllScores,
     resetScoresByMode,
-    getScoreSummary,
-    getFormattedMetrics,
-    getPerformanceInsights
+    getScoreSummary
   };
 };

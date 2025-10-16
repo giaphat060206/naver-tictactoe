@@ -1,13 +1,12 @@
 export type Player = 'odd' | 'even' | null;
 export type Board = number[]; // Array of numbers (0-n) representing square values
-export type GameMode = 'pvp' | 'easy' | 'hard';
+export type GameMode = 'pvp'; // Only PvP mode
 
 export interface Move {
   position: number;
   player: Player;
   moveNumber: number;
   timestamp: number;
-  isAI?: boolean;
   boardSnapshot: Board; // Board state after this move
   incrementValue: number; // The value the square was incremented to
 }
@@ -28,20 +27,6 @@ export interface GameResult {
   winningCombination: number[] | null;
 }
 
-export interface PerformanceMetrics {
-  positionsEvaluated: number;
-  thinkingTimeMs: number;
-  lastMoveTime: number;
-  totalPositionsEvaluated: number;
-  averageThinkingTime: number;
-  movesPlayed: number;
-}
-
-export interface AIResult {
-  position: number;
-  metrics: PerformanceMetrics;
-}
-
 export interface ScoreData {
   wins: number;
   losses: number;
@@ -56,6 +41,4 @@ export interface GameModeScores {
     odd: ScoreData;
     even: ScoreData;
   };
-  easy: ScoreData;
-  hard: ScoreData;
 }

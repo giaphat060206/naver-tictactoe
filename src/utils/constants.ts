@@ -20,9 +20,7 @@ export const GAME_CONSTANTS = {
     EVEN: 'even'
   },
   GAME_MODES: {
-    PVP: 'pvp',
-    EASY_AI: 'easy',
-    HARD_AI: 'hard'
+    PVP: 'pvp'
   },
   AI_DELAY: 300 // milliseconds
 } as const;

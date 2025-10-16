@@ -98,9 +98,6 @@ const GameBoard: React.FC<GameBoardProps> = ({
     return baseColor;
   };
 
-  // Check if it's AI's turn to disable board interaction  
-  const isAITurn = gameMode !== 'pvp' && currentPlayer === 'even';
-
   return (
     <div className="grid grid-cols-5 gap-2 mb-6 mx-auto w-fit"> {/* Changed to 5x5 grid */}
       {board.map((value, index) => (
@@ -108,7 +105,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
           key={index}
           className={getCellStyle(index)}
           onClick={() => onCellClick(index)}
-          disabled={isGameOver || isAITurn}
+          disabled={isGameOver}
           aria-label={`Square ${index + 1}, value ${value}${
             winningCombination?.includes(index) ? ', winning square' : ''
           }`}

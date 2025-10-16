@@ -7,11 +7,10 @@ import GameBoard from './GameBoard';
 import GameStatus from './GameStatus';
 import GameInstructions from './GameInstructions';
 import ScoreBoard from './ScoreBoard';
-import PerformanceMetrics from './PerformanceMetrics';
 import { MoveHistory } from './MoveHistory';
 
 /**
- * Main Tic Tac Toe Component
+ * Main Odd/Even Game Component
  * Orchestrates the game UI using clean architecture principles
  */
 const TicTacToe: React.FC = () => {
@@ -24,9 +23,7 @@ const TicTacToe: React.FC = () => {
     getGameStatus,
     resetAllScores,
     resetScoresByMode,
-    getScoreSummary,
-    getFormattedMetrics,
-    getPerformanceInsights
+    getScoreSummary
   } = useGameState();
 
   return (
@@ -41,19 +38,12 @@ const TicTacToe: React.FC = () => {
           onModeChange={changeGameMode}
         />
 
-        <div className={`mb-6 ${gameState.gameMode === 'pvp' ? 'flex justify-center' : 'grid grid-cols-1 lg:grid-cols-2 gap-6'}`}>
+        <div className="mb-6 flex justify-center">
           <ScoreBoard
             gameMode={gameState.gameMode}
             scoreSummary={getScoreSummary(gameState.gameMode)}
             onResetScores={() => resetScoresByMode(gameState.gameMode)}
             onResetAllScores={resetAllScores}
-          />
-
-          <PerformanceMetrics
-            gameMode={gameState.gameMode}
-            formattedMetrics={getFormattedMetrics(gameState.gameMode)}
-            insights={getPerformanceInsights(gameState.gameMode)}
-            isGameOver={gameState.isGameOver}
           />
         </div>
         

@@ -13,7 +13,6 @@ export class MoveHistoryManager {
     player: Player,
     moveNumber: number,
     boardSnapshot: Board,
-    isAI: boolean = false,
     incrementValue?: number
   ): Move {
     return {
@@ -21,7 +20,6 @@ export class MoveHistoryManager {
       player,
       moveNumber,
       timestamp: Date.now(),
-      isAI,
       boardSnapshot: [...boardSnapshot], // Create a copy of the board
       incrementValue: incrementValue || boardSnapshot[position]
     };
@@ -34,11 +32,10 @@ export class MoveHistoryManager {
     history: Move[],
     position: number,
     player: Player,
-    boardSnapshot: Board,
-    isAI: boolean = false
+    boardSnapshot: Board
   ): Move[] {
     const moveNumber = history.length + 1;
-    const newMove = this.createMove(position, player, moveNumber, boardSnapshot, isAI);
+    const newMove = this.createMove(position, player, moveNumber, boardSnapshot);
     return [...history, newMove];
   }
 
@@ -58,23 +55,15 @@ export class MoveHistoryManager {
    */
   static formatMove(move: Move, gameMode: string): string {
     const coordinate = this.positionToCoordinate(move.position);
-    const playerDisplay = this.getPlayerDisplay(move.player, move.isAI || false, gameMode);
+    const playerDisplay = this.getPlayerDisplay(move.player);
     return `${move.moveNumber}. ${playerDisplay} → ${coordinate} (${move.incrementValue})`;
   }
 
   /**
    * Gets player display name based on context
    */
-  private static getPlayerDisplay(player: Player, isAI: boolean, gameMode: string): string {
-    if (gameMode === 'pvp') {
-      return player === 'odd' ? 'Odd Player' : 'Even Player';
-    } else {
-      if (player === 'odd') {
-        return 'You';
-      } else {
-        return isAI ? 'AI' : 'Even Player';
-      }
-    }
+  private static getPlayerDisplay(player: Player): string {
+    return player === 'odd' ? 'Odd Player' : 'Even Player';
   }
 
   /**
@@ -118,8 +107,8 @@ export class MoveHistoryManager {
         totalMoves: 0,
         gameDuration: 0,
         averageMoveTime: 0,
-        humanMoves: 0,
-        aiMoves: 0
+        oddMoves: 0,
+        evenMoves: 0
       };
     }
 
@@ -127,8 +116,8 @@ export class MoveHistoryManager {
     const lastMove = history[history.length - 1];
     const gameDuration = lastMove.timestamp - firstMove.timestamp;
     
-    const humanMoves = history.filter(move => !move.isAI).length;
-    const aiMoves = history.filter(move => move.isAI).length;
+    const oddMoves = history.filter(move => move.player === 'odd').length;
+    const evenMoves = history.filter(move => move.player === 'even').length;
     
     const averageMoveTime = history.length > 1 ? gameDuration / (history.length - 1) : 0;
 
@@ -136,8 +125,8 @@ export class MoveHistoryManager {
       totalMoves: history.length,
       gameDuration,
       averageMoveTime,
-      humanMoves,
-      aiMoves
+      oddMoves,
+      evenMoves
     };
   }
 

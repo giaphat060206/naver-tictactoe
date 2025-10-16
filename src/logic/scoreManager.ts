@@ -29,9 +29,7 @@ export class ScoreManager {
       pvp: {
         odd: this.createInitialScoreData(),
         even: this.createInitialScoreData()
-      },
-      easy: this.createInitialScoreData(),
-      hard: this.createInitialScoreData()
+      }
     };
   }
 
@@ -121,31 +119,17 @@ export class ScoreManager {
   ): GameModeScores {
     const newScores = { ...scores };
 
-    if (gameMode === 'pvp') {
-      // In PvP mode, update both players
-      if (winner === 'odd') {
-        newScores.pvp.odd = this.updateScoreData(scores.pvp.odd, 'win');
-        newScores.pvp.even = this.updateScoreData(scores.pvp.even, 'loss');
-      } else if (winner === 'even') {
-        newScores.pvp.odd = this.updateScoreData(scores.pvp.odd, 'loss');
-        newScores.pvp.even = this.updateScoreData(scores.pvp.even, 'win');
-      } else {
-        // Draw
-        newScores.pvp.odd = this.updateScoreData(scores.pvp.odd, 'draw');
-        newScores.pvp.even = this.updateScoreData(scores.pvp.even, 'draw');
-      }
+    // In PvP mode, update both players
+    if (winner === 'odd') {
+      newScores.pvp.odd = this.updateScoreData(scores.pvp.odd, 'win');
+      newScores.pvp.even = this.updateScoreData(scores.pvp.even, 'loss');
+    } else if (winner === 'even') {
+      newScores.pvp.odd = this.updateScoreData(scores.pvp.odd, 'loss');
+      newScores.pvp.even = this.updateScoreData(scores.pvp.even, 'win');
     } else {
-      // AI modes - human is always odd, AI is always even
-      let result: 'win' | 'loss' | 'draw';
-      if (winner === 'odd') {
-        result = 'win';
-      } else if (winner === 'even') {
-        result = 'loss';
-      } else {
-        result = 'draw';
-      }
-      
-      newScores[gameMode] = this.updateScoreData(scores[gameMode], result);
+      // Draw
+      newScores.pvp.odd = this.updateScoreData(scores.pvp.odd, 'draw');
+      newScores.pvp.even = this.updateScoreData(scores.pvp.even, 'draw');
     }
 
     this.saveScores(newScores);
@@ -167,14 +151,11 @@ export class ScoreManager {
   static resetScoresByMode(scores: GameModeScores, gameMode: GameMode): GameModeScores {
     const newScores = { ...scores };
     
-    if (gameMode === 'pvp') {
-      newScores.pvp = {
-        odd: this.createInitialScoreData(),
-        even: this.createInitialScoreData()
-      };
-    } else {
-      newScores[gameMode] = this.createInitialScoreData();
-    }
+    // Only PvP mode available
+    newScores.pvp = {
+      odd: this.createInitialScoreData(),
+      even: this.createInitialScoreData()
+    };
     
     this.saveScores(newScores);
     return newScores;
@@ -210,22 +191,14 @@ export class ScoreManager {
     secondary?: ScoreData;
     labels: { primary: string; secondary?: string };
   } {
-    if (gameMode === 'pvp') {
-      return {
-        primary: scores.pvp.odd,
-        secondary: scores.pvp.even,
-        labels: {
-          primary: 'Odd Player',
-          secondary: 'Even Player'
-        }
-      };
-    } else {
-      return {
-        primary: scores[gameMode],
-        labels: {
-          primary: gameMode === 'easy' ? 'vs Easy AI' : 'vs Hard AI'
-        }
-      };
-    }
+    // Only PvP mode available
+    return {
+      primary: scores.pvp.odd,
+      secondary: scores.pvp.even,
+      labels: {
+        primary: 'Odd Player',
+        secondary: 'Even Player'
+      }
+    };
   }
 }
