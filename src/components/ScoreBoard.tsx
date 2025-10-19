@@ -88,15 +88,6 @@ const ScoreBoard: React.FC<ScoreBoardProps> = ({
           renderScoreCard(scoreSummary.secondary, scoreSummary.labels.secondary, false)
         }
       </div>
-
-      {gameMode !== 'pvp' && (
-        <div className="mt-3 text-xs text-gray-500 text-center">
-          {gameMode === 'easy' ? 
-            '🟢 Easy AI: Random moves - Good for practice!' :
-            '🔴 Hard AI: Optimal play - Ultimate challenge!'
-          }
-        </div>
-      )}
     </div>
   );
 };

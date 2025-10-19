@@ -2,51 +2,65 @@ import { Board, Player, GameResult } from '../types/game';
 
 /**
  * Game Logic Module
- * Contains all the core game mechanics separated from UI
+ * Contains all the core game mechanics for Odd/Even number game
  */
-export class TicTacToeGame {
+export class OddEvenGame {
   private static readonly WINNING_COMBINATIONS = [
-    [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
-    [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
-    [0, 4, 8], [2, 4, 6] // Diagonals
+    // Rows
+    [0, 1, 2, 3, 4], [5, 6, 7, 8, 9], [10, 11, 12, 13, 14], [15, 16, 17, 18, 19], [20, 21, 22, 23, 24],
+    // Columns
+    [0, 5, 10, 15, 20], [1, 6, 11, 16, 21], [2, 7, 12, 17, 22], [3, 8, 13, 18, 23], [4, 9, 14, 19, 24],
+    // Diagonals
+    [0, 6, 12, 18, 24], [4, 8, 12, 16, 20]
   ];
 
   /**
-   * Creates an empty game board
+   * Creates an empty game board (5x5 with all zeros)
    */
   static createEmptyBoard(): Board {
-    return Array(9).fill(null);
+    return Array(25).fill(0);
   }
 
   /**
-   * Checks if a position on the board is empty
+   * Checks if a move can be made at a position (always true for odd/even game)
    */
   static isValidMove(board: Board, position: number): boolean {
-    return board[position] === null;
+    return position >= 0 && position < 25; // Any position is valid for incrementing
   }
 
   /**
-   * Makes a move on the board and returns a new board
+   * Makes a move by incrementing the number at the position
    */
   static makeMove(board: Board, position: number, player: Player): Board {
     if (!this.isValidMove(board, position)) {
-      throw new Error('Invalid move: position already occupied');
+      throw new Error('Invalid move: position out of bounds');
     }
     
     const newBoard = [...board];
-    newBoard[position] = player;
+    newBoard[position] = newBoard[position] + 1; // Increment the number
     return newBoard;
   }
 
   /**
-   * Checks for a winner on the board and returns the winning combination
+   * Checks for a winner based on odd/even patterns
    */
   static checkWinner(board: Board): { winner: Player; winningCombination: number[] | null } {
     for (const combination of this.WINNING_COMBINATIONS) {
-      const [a, b, c] = combination;
-      if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+      const [a, b, c, d, e] = combination;
+      const values = [board[a], board[b], board[c], board[d], board[e]];
+      
+      // Check if all values are odd and greater than 0
+      if (values.every(val => val > 0 && val % 2 === 1)) {
         return {
-          winner: board[a],
+          winner: 'odd',
+          winningCombination: combination
+        };
+      }
+      
+      // Check if all values are even and greater than 0
+      if (values.every(val => val > 0 && val % 2 === 0)) {
+        return {
+          winner: 'even',
           winningCombination: combination
         };
       }
@@ -65,19 +79,18 @@ export class TicTacToeGame {
   }
 
   /**
-   * Checks if the board is completely filled
+   * Checks if the game should end (when someone wins)
    */
   static isBoardFull(board: Board): boolean {
-    return board.every(cell => cell !== null);
+    // In odd/even game, board is never "full" - game ends only when someone wins
+    return false;
   }
 
   /**
-   * Gets all empty positions on the board
+   * Gets all positions that can be clicked (all positions in odd/even game)
    */
   static getEmptyPositions(board: Board): number[] {
-    return board
-      .map((cell, index) => cell === null ? index : -1)
-      .filter(index => index !== -1);
+    return Array.from({ length: 25 }, (_, index) => index);
   }
 
   /**
@@ -98,19 +111,27 @@ export class TicTacToeGame {
    * Gets the next player
    */
   static getNextPlayer(currentPlayer: Player): Player {
-    return currentPlayer === 'X' ? 'O' : 'X';
+    return currentPlayer === 'odd' ? 'even' : 'odd';
   }
 
   /**
    * Validates if a board state is valid
    */
   static isValidBoardState(board: Board): boolean {
-    if (board.length !== 9) return false;
+    if (board.length !== 25) return false;
     
-    const xCount = board.filter(cell => cell === 'X').length;
-    const oCount = board.filter(cell => cell === 'O').length;
+    // All values should be non-negative numbers
+    return board.every(cell => typeof cell === 'number' && cell >= 0);
+  }
+
+  /**
+   * Determines which player would benefit from clicking a position
+   */
+  static getPlayerForMove(board: Board, position: number): Player {
+    const currentValue = board[position];
+    const nextValue = currentValue + 1;
     
-    // X goes first, so X count should be equal to O count or one more
-    return xCount === oCount || xCount === oCount + 1;
+    // Return the player type that the next value would favor
+    return nextValue % 2 === 1 ? 'odd' : 'even';
   }
 }

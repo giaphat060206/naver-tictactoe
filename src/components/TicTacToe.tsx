@@ -1,84 +1,97 @@
 'use client';
 
 import React from 'react';
-import { useGameState } from '../hooks/useGameState';
-import GameModeSelect from './GameModeSelect';
+import { useMultiplayerGameState } from '../hooks/useMultiplayerGameState';
 import GameBoard from './GameBoard';
 import GameStatus from './GameStatus';
-import GameInstructions from './GameInstructions';
 import ScoreBoard from './ScoreBoard';
-import PerformanceMetrics from './PerformanceMetrics';
 import { MoveHistory } from './MoveHistory';
+import { ConnectionStatusDisplay } from './ConnectionStatusDisplay';
 
 /**
- * Main Tic Tac Toe Component
- * Orchestrates the game UI using clean architecture principles
+ * Main Odd/Even Multiplayer Game Component
+ * Real-time multiplayer using WebSocket
  */
 const TicTacToe: React.FC = () => {
   const { 
-    gameState, 
+    board,
+    currentPlayer,
+    winner,
+    isGameOver,
+    winningCombination,
+    moveHistory,
+    gameMode,
+    connectionStatus,
+    assignedPlayer,
+    bothPlayersConnected,
+    isConnected,
     makeMove, 
     resetGame,
-    revertToMove,
-    changeGameMode, 
-    getGameStatus,
+    scores,
     resetAllScores,
     resetScoresByMode,
-    getScoreSummary,
-    getFormattedMetrics,
-    getPerformanceInsights
-  } = useGameState();
+    getScoreSummary
+  } = useMultiplayerGameState();
+
+  const getGameStatus = () => {
+    if (!isConnected) return 'Connecting...';
+    if (!bothPlayersConnected) return 'Waiting for opponent...';
+    if (isGameOver) {
+      if (winner) {
+        return `${winner.charAt(0).toUpperCase() + winner.slice(1)} Player wins! 🏆`;
+      }
+      return "It's a tie! 🤝";
+    }
+    const playerName = currentPlayer || 'Unknown';
+    return `${playerName.charAt(0).toUpperCase() + playerName.slice(1)} Player's turn`;
+  };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
       <div className="bg-white rounded-lg shadow-lg p-8 max-w-4xl w-full">
-        <h1 className="text-4xl font-bold text-center mb-8 text-gray-800">
-          Tic Tac Toe
+        <h1 className="text-4xl font-bold text-center mb-6 text-gray-800">
+          🎮 Odd/Even Multiplayer
         </h1>
         
-        <GameModeSelect
-          currentMode={gameState.gameMode}
-          onModeChange={changeGameMode}
-        />
-
-        <div className={`mb-6 ${gameState.gameMode === 'pvp' ? 'flex justify-center' : 'grid grid-cols-1 lg:grid-cols-2 gap-6'}`}>
-          <ScoreBoard
-            gameMode={gameState.gameMode}
-            scoreSummary={getScoreSummary(gameState.gameMode)}
-            onResetScores={() => resetScoresByMode(gameState.gameMode)}
-            onResetAllScores={resetAllScores}
+        <div className="mb-6">
+          <ConnectionStatusDisplay
+            connectionStatus={connectionStatus}
+            assignedPlayer={assignedPlayer}
+            bothPlayersConnected={bothPlayersConnected}
           />
+        </div>
 
-          <PerformanceMetrics
-            gameMode={gameState.gameMode}
-            formattedMetrics={getFormattedMetrics(gameState.gameMode)}
-            insights={getPerformanceInsights(gameState.gameMode)}
-            isGameOver={gameState.isGameOver}
+        <div className="mb-6 flex justify-center">
+          <ScoreBoard
+            gameMode={gameMode}
+            scoreSummary={getScoreSummary(gameMode)}
+            onResetScores={() => resetScoresByMode(gameMode)}
+            onResetAllScores={resetAllScores}
           />
         </div>
         
         <GameStatus
           status={getGameStatus()}
-          gameMode={gameState.gameMode}
-          isGameOver={gameState.isGameOver}
-          winner={gameState.winner}
+          gameMode={gameMode}
+          isGameOver={isGameOver}
+          winner={winner}
         />
 
         <GameBoard
-          board={gameState.board}
+          board={board}
           onCellClick={makeMove}
-          isGameOver={gameState.isGameOver}
-          winningCombination={gameState.winningCombination}
-          gameMode={gameState.gameMode}
-          currentPlayer={gameState.currentPlayer}
+          isGameOver={isGameOver || !bothPlayersConnected}
+          winningCombination={winningCombination}
+          gameMode={gameMode}
+          currentPlayer={currentPlayer}
         />
 
-        {gameState.moveHistory.length > 0 && (
+        {moveHistory.length > 0 && (
           <div className="mt-6">
             <MoveHistory
-              moves={gameState.moveHistory}
-              gameMode={gameState.gameMode}
-              onRevertToMove={revertToMove}
+              moves={moveHistory}
+              gameMode={gameMode}
+              onRevertToMove={() => {}}
               className="max-w-md mx-auto"
             />
           </div>
@@ -87,13 +100,17 @@ const TicTacToe: React.FC = () => {
         <div className="text-center mt-6">
           <button
             onClick={resetGame}
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition-colors"
+            disabled={!bothPlayersConnected}
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
             New Game
           </button>
         </div>
 
-        <GameInstructions gameMode={gameState.gameMode} />
+        <div className="mt-6 text-center text-gray-600 text-sm">
+          <p>💡 <strong>How to play:</strong> Both players can click any square at any time!</p>
+          <p>Each click increments the number. Get 5 consecutive odd/even numbers to win!</p>
+        </div>
       </div>
     </div>
   );
