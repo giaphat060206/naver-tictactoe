@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Board, Player, GameMode } from '../types/game';
+import type { Board } from '../types/game';
 
 interface GameBoardProps {
   board: Board;
   onCellClick: (position: number) => void;
   isGameOver: boolean;
   winningCombination: number[] | null;
-  gameMode: GameMode;
-  currentPlayer: Player;
 }
 
 /**
@@ -18,9 +16,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
   board, 
   onCellClick, 
   isGameOver, 
-  winningCombination,
-  gameMode,
-  currentPlayer
+  winningCombination
 }) => {
   const [animatingCells, setAnimatingCells] = useState<Set<number>>(new Set());
   const [previousBoard, setPreviousBoard] = useState<Board>(board);

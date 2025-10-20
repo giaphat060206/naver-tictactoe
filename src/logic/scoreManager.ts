@@ -148,7 +148,7 @@ export class ScoreManager {
   /**
    * Resets scores for a specific game mode
    */
-  static resetScoresByMode(scores: GameModeScores, gameMode: GameMode): GameModeScores {
+  static resetScoresByMode(scores: GameModeScores, _gameMode: GameMode): GameModeScores {
     const newScores = { ...scores };
     
     // Only PvP mode available
@@ -186,7 +186,7 @@ export class ScoreManager {
   /**
    * Gets score summary for display
    */
-  static getScoreSummary(scores: GameModeScores, gameMode: GameMode): {
+  static getScoreSummary(scores: GameModeScores, _gameMode: GameMode): {
     primary: ScoreData;
     secondary?: ScoreData;
     labels: { primary: string; secondary?: string };

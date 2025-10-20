@@ -27,7 +27,7 @@ const TicTacToe: React.FC = () => {
     isConnected,
     makeMove, 
     resetGame,
-    scores,
+    // scores, // Not currently used in multiplayer mode
     resetAllScores,
     resetScoresByMode,
     getScoreSummary
@@ -82,8 +82,6 @@ const TicTacToe: React.FC = () => {
           onCellClick={makeMove}
           isGameOver={isGameOver || !bothPlayersConnected}
           winningCombination={winningCombination}
-          gameMode={gameMode}
-          currentPlayer={currentPlayer}
         />
 
         {moveHistory.length > 0 && (

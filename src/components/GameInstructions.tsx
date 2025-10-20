@@ -1,15 +1,10 @@
 import React from 'react';
-import { GameMode } from '../types/game';
-
-interface GameInstructionsProps {
-  gameMode: GameMode;
-}
 
 /**
  * Game Instructions Component
  * Displays how to play the Odd/Even number game
  */
-const GameInstructions: React.FC<GameInstructionsProps> = ({ gameMode }) => {
+const GameInstructions: React.FC = () => {
   return (
     <div className="mt-8 text-center text-gray-600">
       <h2 className="text-lg font-semibold mb-2">How to Play Odd/Even:</h2>

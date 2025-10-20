@@ -31,7 +31,7 @@ export class OddEvenGame {
   /**
    * Makes a move by incrementing the number at the position
    */
-  static makeMove(board: Board, position: number, player: Player): Board {
+  static makeMove(board: Board, position: number, _player: Player): Board {
     if (!this.isValidMove(board, position)) {
       throw new Error('Invalid move: position out of bounds');
     }
@@ -81,7 +81,7 @@ export class OddEvenGame {
   /**
    * Checks if the game should end (when someone wins)
    */
-  static isBoardFull(board: Board): boolean {
+  static isBoardFull(_board: Board): boolean {
     // In odd/even game, board is never "full" - game ends only when someone wins
     return false;
   }
@@ -89,7 +89,7 @@ export class OddEvenGame {
   /**
    * Gets all positions that can be clicked (all positions in odd/even game)
    */
-  static getEmptyPositions(board: Board): number[] {
+  static getEmptyPositions(_board: Board): number[] {
     return Array.from({ length: 25 }, (_, index) => index);
   }
 

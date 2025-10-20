@@ -53,7 +53,7 @@ export class MoveHistoryManager {
   /**
    * Formats move for display
    */
-  static formatMove(move: Move, gameMode: string): string {
+  static formatMove(move: Move, _gameMode: string): string {
     const coordinate = this.positionToCoordinate(move.position);
     const playerDisplay = this.getPlayerDisplay(move.player);
     return `${move.moveNumber}. ${playerDisplay} → ${coordinate} (${move.incrementValue})`;

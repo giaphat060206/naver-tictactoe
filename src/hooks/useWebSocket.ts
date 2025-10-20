@@ -3,7 +3,20 @@
  * Manages WebSocket connection and message handling
  */
 import { useEffect, useRef, useCallback, useState } from 'react';
-import type { Player, Board, ConnectionStatus, WSMessage } from '../types/game';
+import type { 
+  Player, 
+  Board, 
+  ConnectionStatus, 
+  WSMessage,
+  PlayerAssignedMessage,
+  PlayerConnectedMessage,
+  GameStartMessage,
+  UpdateMessage,
+  GameOverMessage,
+  GameResetMessage,
+  PlayerDisconnectedMessage,
+  ErrorMessage
+} from '../types/game';
 
 const WS_URL = 'ws://localhost:8080';
 
@@ -92,79 +105,65 @@ export function useWebSocket(handlers: MessageHandler): UseWebSocketReturn {
           switch (message.type) {
             case 'PLAYER_ASSIGNED':
               {
-                const { player, board } = message as { player: Player; board: Board };
-                setAssignedPlayer(player);
+                const msg = message as PlayerAssignedMessage;
+                setAssignedPlayer(msg.player);
                 setConnectionStatus('waiting');
-                handlersRef.current.onPlayerAssigned?.(player, board);
+                handlersRef.current.onPlayerAssigned?.(msg.player, msg.board);
               }
               break;
 
             case 'PLAYER_CONNECTED':
               {
-                const { player, bothPlayersConnected } = message as {
-                  player: Player;
-                  bothPlayersConnected: boolean;
-                };
-                if (bothPlayersConnected) {
+                const msg = message as PlayerConnectedMessage;
+                if (msg.bothPlayersConnected) {
                   setConnectionStatus('connected');
                 }
-                handlersRef.current.onPlayerConnected?.(player, bothPlayersConnected);
+                handlersRef.current.onPlayerConnected?.(msg.player, msg.bothPlayersConnected);
               }
               break;
 
             case 'GAME_START':
               {
-                const { board } = message as { board: Board };
+                const msg = message as GameStartMessage;
                 setConnectionStatus('connected');
-                handlersRef.current.onGameStart?.(board);
+                handlersRef.current.onGameStart?.(msg.board);
               }
               break;
 
             case 'UPDATE':
               {
-                const { square, value, board } = message as {
-                  square: number;
-                  value: number;
-                  board: Board;
-                };
-                handlersRef.current.onUpdate?.(square, value, board);
+                const msg = message as UpdateMessage;
+                handlersRef.current.onUpdate?.(msg.square, msg.value, msg.board);
               }
               break;
 
             case 'GAME_OVER':
               {
-                const { winner, winningLine, board } = message as {
-                  winner: Player;
-                  winningLine: number[];
-                  board: Board;
-                };
-                handlersRef.current.onGameOver?.(winner, winningLine, board);
+                const msg = message as GameOverMessage;
+                handlersRef.current.onGameOver?.(msg.winner, msg.winningLine, msg.board);
               }
               break;
 
             case 'GAME_RESET':
               {
-                const { board } = message as { board: Board };
-                handlersRef.current.onGameReset?.(board);
+                const msg = message as GameResetMessage;
+                handlersRef.current.onGameReset?.(msg.board);
               }
               break;
 
             case 'PLAYER_DISCONNECTED':
               {
-                const { player, message: msg } = message as {
-                  player: Player;
-                  message: string;
-                };
+                const msg = message as PlayerDisconnectedMessage;
                 setConnectionStatus('disconnected');
-                handlersRef.current.onPlayerDisconnected?.(player, msg);
+                handlersRef.current.onPlayerDisconnected?.(msg.player, msg.message);
               }
               break;
 
             case 'ERROR':
               {
-                const { message: errorMsg } = message as { message: string };
+                const msg = message as ErrorMessage;
                 setConnectionStatus('error');
-                handlersRef.current.onError?.(errorMsg);
+                handlersRef.current.onError?.(msg.message);
               }
               break;
 
@@ -196,7 +195,6 @@ export function useWebSocket(handlers: MessageHandler): UseWebSocketReturn {
       isConnecting.current = false;
       setConnectionStatus('error');
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // No dependencies - handlers accessed via ref
 
   /**
@@ -222,7 +220,6 @@ export function useWebSocket(handlers: MessageHandler): UseWebSocketReturn {
     return () => {
       disconnect();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run once on mount
 
   return {

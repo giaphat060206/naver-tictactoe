@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { GameState, GameMode, Player, Board } from '../types/game';
+import { GameState, Player, Board } from '../types/game';
 import { useScoreTracking } from './useScoreTracking';
 import { MoveHistoryManager } from '../utils/moveHistory';
 import { useWebSocket } from './useWebSocket';
@@ -171,7 +171,7 @@ export const useMultiplayerGameState = () => {
   /**
    * Changes the game mode (not applicable in multiplayer, but keeping for compatibility)
    */
-  const changeGameMode = useCallback((newMode: GameMode) => {
+  const changeGameMode = useCallback(() => {
     // In multiplayer, we can't change game mode
     console.log('Game mode change not supported in multiplayer');
   }, []);
@@ -179,7 +179,7 @@ export const useMultiplayerGameState = () => {
   /**
    * Reverts to a move (not supported in real-time multiplayer)
    */
-  const revertToMove = useCallback((moveIndex: number) => {
+  const revertToMove = useCallback(() => {
     console.log('Revert to move not supported in multiplayer');
   }, []);
 
@@ -193,10 +193,10 @@ export const useMultiplayerGameState = () => {
     winningCombination: gameState.winningCombination,
     moveHistory: gameState.moveHistory,
     
-    // Multiplayer state
-    connectionStatus: gameState.connectionStatus,
-    assignedPlayer: gameState.assignedPlayer,
-    bothPlayersConnected: gameState.bothPlayersConnected,
+    // Multiplayer state (guaranteed to be defined in multiplayer mode)
+    connectionStatus: gameState.connectionStatus!,
+    assignedPlayer: gameState.assignedPlayer!,
+    bothPlayersConnected: gameState.bothPlayersConnected!,
     isConnected,
     
     // Actions

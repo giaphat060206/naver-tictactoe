@@ -61,12 +61,12 @@ export function MoveHistory({ moves, gameMode, onRevertToMove, isCompact = false
                 <div className="flex items-center space-x-2">
                   <span
                     className={`w-6 h-6 rounded-full flex items-center justify-center text-white font-bold text-sm ${
-                      move.player === 'X' 
+                      move.player === 'odd' 
                         ? 'bg-blue-500' 
                         : 'bg-red-500'
                     }`}
                   >
-                    {move.player}
+                    {move.player === 'odd' ? 'O' : 'E'}
                   </span>
                   <span className="text-gray-700 font-medium">
                     {MoveHistoryManager.formatMove(move, gameMode)}

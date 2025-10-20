@@ -1,16 +1,10 @@
 import React from 'react';
-import { GameMode } from '../types/game';
-
-interface GameModeSelectProps {
-  currentMode: GameMode;
-  onModeChange: (mode: GameMode) => void;
-}
 
 /**
- * Game Mode Selection Component
- * Handles switching between different Odd/Even game modes
+ * Game Mode Select Component
+ * Displays current game mode (PvP only for multiplayer)
  */
-const GameModeSelect: React.FC<GameModeSelectProps> = ({ currentMode, onModeChange }) => {
+const GameModeSelect: React.FC = () => {
   // Only PvP mode available
   return (
     <div className="flex justify-center gap-2 mb-6">

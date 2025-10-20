@@ -20,10 +20,10 @@ export interface GameState {
   gameMode: GameMode;
   winningCombination: number[] | null;
   moveHistory: Move[];
-  // Multiplayer fields
-  connectionStatus: ConnectionStatus;
-  assignedPlayer: Player;
-  bothPlayersConnected: boolean;
+  // Multiplayer fields (optional for backward compatibility)
+  connectionStatus?: ConnectionStatus;
+  assignedPlayer?: Player;
+  bothPlayersConnected?: boolean;
 }
 
 export interface GameResult {
